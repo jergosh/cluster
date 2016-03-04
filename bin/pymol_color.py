@@ -4,6 +4,7 @@ import glob
 import sys
 from operator import itemgetter
 from argparse import ArgumentParser
+import pandas as pd
 # Include paths to 
 # Is this the best way?
 sys.path.extend(["/Library/Python/2.5/site-packages", 
@@ -20,64 +21,85 @@ argparser.add_argument("--colorfile", metavar="color_file", type=str, required=F
 
 args = argparser.parse_args(os.environ['CMD'].split())
 
-
-proj_dir = "/Users/greg/Documents/projects/slr_pipeline"
-pdb_map_file = open(path.join(proj_dir, "data/pdb_map_Eutheria.tab"))
-
-ens, pdb_name, chain, score, length = None, None, None, None, None
-for l in pdb_map_file:
-    ens, pdb_name, chain, score, length = l.rstrip().split('\t')[:5]
-    if pdb_name == args.pdbstr:
-        break
-else:
-    raise Exception
-
-cmd.load(path.join(proj_dir, "data/pdb", 'pdb'+pdb_name+'.ent'))
-cmd.select("chain"+chain, "chain "+chain)
+data_table = pd.read_table(open(args.colorfile), sep="\t")
+# assert len(set(data_table.pdb_chain)) == 1
+assert len(set(data_table.pdb_id)) == 1
+pdb_name = data_table.pdb_id[0]
+# cmd.load(path.join("data/pdb", 'pdb'+pdb_name+'.ent'))
+cmd.load(args.pdbstr)
 
 # This is weird.
 seq_data = set()
-myspace = { 'f': lambda resi, resn: seq_data.add((int(resi), resn)) }
-cmd.iterate('(chain'+chain+')', "f(resi, resn)", space = myspace)
+# myspace = { 'f': lambda resi, resn: seq_data.add((int(resi), resn)) }
+# cmd.iterate('(chain'+chain+')', "f(resi, resn)", space = myspace)
 
-resis = sorted(seq_data, key=itemgetter(0))
-seq = SeqUtils.seq1(''.join((c[1] for c in sorted(seq_data, key=itemgetter(0)))))
+# resis = sorted(seq_data, key=itemgetter(0))
+# seq = SeqUtils.seq1(''.join((c[1] for c in sorted(seq_data, key=itemgetter(0)))))
 
-offset = 0
-cmd.color("bluewhite", "/pdb"+pdb_name+'//'+chain)
+# for i, l in data_table.iterrows():
+#     residue = str(l.pdb_pos)
+#     if l.omega > 1.0:
+#         r, g, b  = 1.0, 0.0, 0.0
+#     else:
+#         r, g, b  = 1.0, 1.0, 1.0
 
-if args.colorfile is not None:
-    colorfile = open(args.colorfile)
-    
-    for l in colorfile:
-        f = l.rstrip().split('\t')
-        residue = f[0].strip()
-        r, g, b  = (float(i) for i in f[1:])
-        obj = '/pdb'+pdb_name+'//'+chain+'/'+residue
-        color = [r/255, g/255, b/255]
+#     obj = '/pdb'+pdb_name+'//'+chain+'/'+residue
+#     color = [r, g, b]
+
+#     cmd.set_color("col"+residue, color)
+#     cmd.color("col"+residue, obj)
+
+def colour_pdb(df):
+    print df
+
+    chain = df.pdb_chain.iloc[0]
+
+    # TODO: Where to get the chain from? Parse out of the table and assert that there is a 
+    # single chain?
+    cmd.select("chain"+chain, "chain "+chain)
+    cmd.color("gray", "/"+pdb_name+'//'+chain)
+
+    for i, l in data_table.iterrows():
+        residue = str(l.pdb_pos)
+        if l.omega == "grey":
+            r, g, b  = 1.0, 1.0, 1.0
+        elif l.omega == "red":
+            r, g, b  = 1.0, 0.0, 0.0
+        elif l.omega == "blue":
+            r, g, b  = 0.0, 0.0, 1.0
+
+        # obj = '/pdb'+pdb_name+'//'+chain+'/'+residue
+        obj = '/'+pdb_name+'//'+chain+'/'+residue
+        color = [r, g, b]
 
         cmd.set_color("col"+residue, color)
         cmd.color("col"+residue, obj)
     
     cmd.refresh()
-else:        
-    strsites_fn = path.join(proj_dir, 'data/ens/73/pdb_map/Eutheria', ens+'.tab')
-    strsites = open(strsites_fn)
 
-    strsites.readline() # Header
-    for l in strsites:
-        f = l.rstrip().split('\t')
+data_table.groupby("pdb_chain").apply(colour_pdb)
+# proj_dir = "/Users/greg/Documents/projects/slr_pipeline"
+# ens, pdb_name, chain, score, length = None, None, None, None, None
+# else:        
+#     offset = 0
+#     strsites_fn = path.join(proj_dir, 'data/ens/73/pdb_map/Eutheria', ens+'.tab')
+#     strsites = open(strsites_fn)
 
-        if len(f) < 6:
-            continue
-        site, omega = int(f[2]), float(f[5])
-        obj = '/pdb'+pdb_name+'//'+chain+'/'+str(site+offset)
+#     strsites.readline() # Header
+#     for l in strsites:
+#         f = l.rstrip().split('\t')
 
-        if omega > 1:
-            cmd.set_color("col"+str(site), [1, 0, 0])
-        else:
-            cmd.set_color("col"+str(site), [1, (1-omega)/1, (1-omega)/1])
+#         if len(f) < 6:
+#             continue
+#         site, omega = int(f[2]), float(f[5])
+#         obj = '/pdb'+pdb_name+'//'+chain+'/'+str(site+offset)
 
-            cmd.color("col"+str(site), obj)
+#         if omega > 1:
+#             cmd.set_color("col"+str(site), [1, 0, 0])
+#         else:
+#             cmd.set_color("col"+str(site), [1, (1-omega)/1, (1-omega)/1])
+
+#             cmd.color("col"+str(site), obj)
     
-            cmd.refresh()
+#             cmd.refresh()
+
