@@ -94,7 +94,6 @@ def clumps(residues, thr=6):
 
     return WAP
 
-# TODO: Is it worth it to make this into a class (or refactor altogether)
 d = lambda: defaultdict(int)
 class ClusterList():
     def __init__(self):
@@ -155,18 +154,38 @@ def find_sequential(chain, res_id):
 
     return None
 
-def process_pdb(df, pdbdir):
-    cath_id = df.cath_id.iloc[0]
+def run_sim(pdb_chain, n_residues, score, niter):
+    sim_WAP = []
+    for i in range(niter):
+        sim_residues = random.sample(pdb_chain, n_residues)
+        sim_WAP.append(clumps(sim_residues))
+
+    pval = sum([ score < w for w in sim_WAP ]) * 1.0 / niter
+    return pval
+
+def process_pdb(df, pdbdir, thr, stat, greater, niter, rerun_thr, rerun_iter):
     pdb_id = df.pdb_id.iloc[0]
-    # ens_id = df.ens_id.iloc[0]
-    # chain_id = df.pdb_chain.iloc[0]
-    # print >>sys.stderr, ens_id, pdb_id, chain_id
-    print >>sys.stderr, pdb_id
+    stable_id = df.stable_id.iloc[0]
+    chain_id = df.pdb_chain.iloc[0]
+
+    if greater:
+        op = operator.gt
+    else:
+        op = operator.lt
+
+    # Quick check if there might be enough sites, to save time on loading the PDB
+    n_check = 0
+    for i, row in df.iterrows():
+        if op(row[stat], thr):
+            n_check += 1
+
+    if n_check < 2:
+        print >>sys.stderr, "Skipping", stable_id, pdb_id
+        return
+
     try:
-        # pdb = p.get_structure(pdb_id, path.join(pdbdir, 'pdb'+pdb_id+'.ent'))
-        pdb = p.get_structure(pdb_id, path.join(pdbdir, pdb_id))
-        # pdb_chain = pdb[0][chain_id]
-        pdb_chain = list(pdb[0])[0]
+        pdb = p.get_structure(pdb_id, path.join(pdbdir, 'pdb'+pdb_id+'.ent'))
+        pdb_chain = pdb[0][chain_id]
     except IOError, e:
         print >>sys.stderr, "PDB file", pdb_id, "missing!"
         return
@@ -174,8 +193,8 @@ def process_pdb(df, pdbdir):
     r_coords = []
     residues = []
     for i, row in df.iterrows():
-        if row.omega > args.omega_thr:
-            res_id = parse_coord(row.pdb_coord)
+        if op(row[stat], thr):
+            res_id = parse_coord(row.pdb_pos)
             try:
                 r = pdb_chain[res_id]
             except KeyError, e:
@@ -187,67 +206,48 @@ def process_pdb(df, pdbdir):
             r_coords.append(r['CA'].get_coord())
             residues.append(r)
 
+    print >>sys.stderr, stable_id, pdb_id, chain_id, '('+str(len(r_coords))+')',
+
     if len(r_coords) < 2:
-        # print >>sys.stderr, "<= 1 residue with omega > {}. Exiting".format(args.omega_thr)
         return
 
     WAP = clumps(residues)
-    #neighbour_map = compute_neighbours(pdb_chain, args.dist_thr)
-    #labels = rcn_clustering(neighbour_map, pdb_chain, residues)
 
-    # print >>sys.stderr, "Running simulations...",
-    sim_WAP = []
-    for i in range(args.niter):
-        sim_residues = random.sample(pdb_chain, len(residues))
-        sim_WAP.append(clumps(sim_residues))
+    pval = run_sim(pdb_chain, len(residues), WAP, niter)
+    print >>sys.stderr, pval,
+    if pval < rerun_thr:
+        pval = run_sim(pdb_chain, len(residues), WAP, rerun_iter)
+        print >>sys.stderr, pval
+    else:
+        print >>sys.stderr
 
-    # print WAP, sum(sim_WAP) / len(sim_WAP)
-    pval = sum([ WAP < w for w in sim_WAP ]) * 1.0 / args.niter
+    # print '\t'.join([ str(it) for it in 
+    #                   [ cath_id, pdb_id, len(pdb_chain), len(residues), pval ] ])
     print '\t'.join([ str(it) for it in 
-                      [ cath_id, pdb_id, len(pdb_chain), len(residues), pval ] ])
-    # print '\t'.join([ str(it) for it in 
-    #                   [ ens_id, pdb_id, len(pdb_chain), len(residues), pval ] ])
-
-    # clusterlist = ClusterList()
-    # i = 0
-    # while i < args.niter:
-    #     sim_residues = random.sample(pdb_chain, len(residues)) 
-    #     sim_labels = rcn_clustering(neighbour_map, pdb_chain, sim_residues)
-
-    #     if any([ isnan(it) for it in sim_labels ]):
-    #         continue
-
-    #     clusterlist.process_clusters(sim_labels)
-    #     i += 1
-    
-
-    # print >>sys.stderr, "done."
-    # clusterlist.get_pvals(args.niter)
-
-    # clusters = clusterlist.collapse_clusters(labels)
-    # combined_pval = 1.0
-    # for n in sorted(clusters):
-    #     k = clusters[n]
-    #     combined_pval *= clusterlist.cl_found[n][k]
-
-    # print '\t'.join([ str(it) for it in 
-    #                   [ ens_id, pdb_id, len(pdb_chain), len(labels), combined_pval, clusterlist.cl_max[max(clusters.keys())], clusterlist.cl_number[max(labels)+1] ] ])
+                      [ stable_id, pdb_id, pdb_chain, len(pdb_chain), len(residues), pval ] ])
 
 p = PDB.PDBParser(QUIET=True)
 
 argparser = ArgumentParser()
 argparser.add_argument("--pdbmap", metavar="pdb_map", type=str, required=True)
 argparser.add_argument("--pdbdir", metavar="pdb_dir", type=str, required=True)
-argparser.add_argument("--dist_thr", metavar="thr", type=float, default=4.0)
-argparser.add_argument("--omega_thr", metavar="thr", type=float, default=1.0)
+# argparser.add_argument("--dist_thr", metavar="thr", type=float, default=4.0)
+
+argparser.add_argument("--thr", metavar="thr", type=float, default=1.0)
+argparser.add_argument("--rerun_thr", metavar="rerun_thr", type=float, default=0.001)
+argparser.add_argument("--stat", metavar="thr", type=str, default="omega")
+argparser.add_argument('--greater', dest='greater', action='store_true')
+argparser.add_argument('--lesser', dest='greater', action='store_false')
+argparser.set_defaults(greater=True)
 
 argparser.add_argument("--niter", metavar="n_iter", type=int, required=False, default=0)
-argparser.add_argument("--preference", metavar="preference", type=int, required=False, default=-50)
+argparser.add_argument("--rerun_iter", metavar="rerun_iter", type=int, required=False, default=0)
+# argparser.add_argument("--preference", metavar="preference", type=int, required=False, default=-50)
 
 
 args = argparser.parse_args()
 
-pdb_map = pandas.read_table(args.pdbmap, dtype={ "cath_id": str, "pdb_id": str, "pdb_coord": str, "omega": np.float64 })
+pdb_map = pandas.read_table(args.pdbmap, dtype={ "stable_id": str, "pdb_id": str, "pdb_pos": str, "omega": np.float64 })
 
 # pdb_map = pandas.read_table(args.pdbmap, 
 #                             names=[ "ens_id", "ens_coord", "uniprot_id", "uniprot_coord", 
@@ -256,6 +256,6 @@ pdb_map = pandas.read_table(args.pdbmap, dtype={ "cath_id": str, "pdb_id": str, 
 #                                     "pdb_id": str, "pdb_chain": str, "pdb_coord": str, "SS": str,
 #                                     "rsa": np.float64, "omega": np.float64 })
 
-pdb_map.groupby(["cath_id"]).apply(process_pdb, args.pdbdir)
-# pdb_map.groupby(["ens_id", "pdb_id", "pdb_chain"]).apply(process_pdb, args.pdbdir)
+# pdb_map.groupby(["cath_id", "pdb_id"]).apply(process_pdb, args.pdbdir)
+pdb_map.groupby(["stable_id", "pdb_id", "pdb_chain"]).apply(process_pdb, args.pdbdir, args.thr, args.stat, args.greater, args.niter, args.rerun_thr, args.rerun_iter)
 # process_pdb(pdb_map)
