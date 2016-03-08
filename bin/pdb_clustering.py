@@ -258,5 +258,6 @@ pdb_map = pandas.read_table(args.pdbmap, dtype={ "stable_id": str, "pdb_id": str
 #                                     "rsa": np.float64, "omega": np.float64 })
 
 # pdb_map.groupby(["cath_id", "pdb_id"]).apply(process_pdb, args.pdbdir)
-pdb_map.groupby(["stable_id", "pdb_id", "pdb_chain"]).apply(process_pdb, args.pdbdir, args.thr, args.stat, args.greater, args.niter, args.rerun_thr, args.rerun_iter, args.outfile)
+outfile = open(args.outfile, 'w')
+pdb_map.groupby(["stable_id", "pdb_id", "pdb_chain"]).apply(process_pdb, args.pdbdir, args.thr, args.stat, args.greater, args.niter, args.rerun_thr, args.rerun_iter, outfile)
 # process_pdb(pdb_map)
