@@ -9,7 +9,7 @@ from subprocess import Popen
 import numpy as np
 import pandas
 
-clustering_cmd = "python bin/pdb_clustering.py --pdbmap {} --pdbfile {} --outfile {} \
+clustering_cmd = "ipython bin/pdb_clustering.py --pdbmap {} --pdbfile {} --outfile {} \
 --thr {} --rerun_thr {} --stat {} {} --niter 10000"
 
 argparser = ArgumentParser()
