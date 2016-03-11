@@ -163,7 +163,7 @@ def run_sim(pdb_chain, n_residues, score, niter):
     pval = sum([ score < w for w in sim_WAP ]) * 1.0 / niter
     return pval
 
-def process_pdb(df, pdbdir, thr, stat, greater, niter, rerun_thr, rerun_iter, outfile):
+def process_pdb(df, pdbfile, thr, stat, greater, niter, rerun_thr, rerun_iter, outfile):
     pdb_id = df.pdb_id.iloc[0]
     stable_id = df.stable_id.iloc[0]
     chain_id = df.pdb_chain.iloc[0]
@@ -184,7 +184,7 @@ def process_pdb(df, pdbdir, thr, stat, greater, niter, rerun_thr, rerun_iter, ou
         return df
 
     try:
-        pdb = p.get_structure(pdb_id, path.join(pdbdir, 'pdb'+pdb_id+'.ent'))
+        pdb = p.get_structure(pdb_id, pdbfile)
         pdb_chain = pdb[0][chain_id]
     except IOError, e:
         print >>sys.stderr, "PDB file", pdb_id, "missing!"
@@ -232,9 +232,8 @@ p = PDB.PDBParser(QUIET=True)
 
 argparser = ArgumentParser()
 argparser.add_argument("--pdbmap", metavar="pdb_map", type=str, required=True)
-argparser.add_argument("--pdbdir", metavar="pdb_dir", type=str, required=True)
+argparser.add_argument("--pdbfile", metavar="pdb_dir", type=str, required=True)
 argparser.add_argument('--outfile', metavar='out_file', type=str, required=True)
-# argparser.add_argument("--dist_thr", metavar="thr", type=float, default=4.0)
 
 argparser.add_argument("--thr", metavar="thr", type=float, default=1.0)
 argparser.add_argument("--rerun_thr", metavar="rerun_thr", type=float, default=0.001)
@@ -259,7 +258,7 @@ pdb_map = pandas.read_table(args.pdbmap, dtype={ "stable_id": str, "pdb_id": str
 #                                     "pdb_id": str, "pdb_chain": str, "pdb_coord": str, "SS": str,
 #                                     "rsa": np.float64, "omega": np.float64 })
 
-# pdb_map.groupby(["cath_id", "pdb_id"]).apply(process_pdb, args.pdbdir)
+# pdb_map.groupby(["cath_id", "pdb_id"]).apply(process_pdb, args.pdbfile)
 outfile = open(args.outfile, 'w')
-pdb_map.groupby(["stable_id", "pdb_id", "pdb_chain"]).apply(process_pdb, args.pdbdir, args.thr, args.stat, args.greater, args.niter, args.rerun_thr, args.rerun_iter, outfile)
-# process_pdb(pdb_map)
+# pdb_map.groupby(["stable_id", "pdb_id", "pdb_chain"]).apply(process_pdb, args.pdbdir, args.thr, args.stat, args.greater, args.niter, args.rerun_thr, args.rerun_iter, outfile)
+process_pdb(pdb_map)
