@@ -31,9 +31,9 @@ args = argparser.parse_args()
 
 def submit_clustering(df, pdbdir, thr, stat, greater, niter, rerun_thr, rerun_iter, outdir):
     # Write out a file -- stable_id - pdb_id - pdb_chain
-    stable_id = df.stable_id.iloc(0)
-    pdb_id = df.pdb_id.iloc(0)
-    pdb_chain = df.pdb_chain.iloc(0)
+    stable_id = df.stable_id.iloc[0]
+    pdb_id = df.pdb_id.iloc[0]
+    pdb_chain = df.pdb_chain.iloc[0]
 
     df_file = path.join(outdir, '_'.join([stable_id, pdb_id, pdb_chain])+'.tab')
     out_file = path.join(outdir, '_'.join([stable_id, pdb_id, pdb_chain])+'.out')
