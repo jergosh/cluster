@@ -50,8 +50,8 @@ def submit_clustering(df, pdbdir, thr, stat, greater, niter, rerun_thr, rerun_it
                                        greater_val,
                                        niter,
                                        rerun_iter)
-    print [ 'bsub', '-o '+outfile, clustering ]
-    p = Popen([ 'bsub', '-o '+outfile, clustering ])
+    print [ 'bsub', '-o '+out_file, clustering ]
+    p = Popen([ 'bsub', '-o '+out_file, clustering ])
     p.wait()
 
 pdb_map = pandas.read_table(args.pdbmap, dtype={ "stable_id": str, "pdb_id": str, "pdb_pos": str, "omega": np.float64 })
