@@ -6,6 +6,8 @@ from os import path
 from argparse import ArgumentParser
 from subprocess import Popen
 
+import pandas
+
 clustering_cmd = "python bin/pdb_clustering.py --pdbmap {} --pdbfile {} --outfile {} \
 --thr {} --rerun_thr {} --stat {} {} --niter 10000"
 
