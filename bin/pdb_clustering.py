@@ -181,14 +181,14 @@ def process_pdb(df, pdbdir, thr, stat, greater, niter, rerun_thr, rerun_iter, ou
 
     if n_check < 2:
         print >>sys.stderr, "Skipping", stable_id, pdb_id
-        return
+        return df
 
     try:
         pdb = p.get_structure(pdb_id, path.join(pdbdir, 'pdb'+pdb_id+'.ent'))
         pdb_chain = pdb[0][chain_id]
     except IOError, e:
         print >>sys.stderr, "PDB file", pdb_id, "missing!"
-        return
+        return df
 
     r_coords = []
     residues = []
@@ -209,7 +209,7 @@ def process_pdb(df, pdbdir, thr, stat, greater, niter, rerun_thr, rerun_iter, ou
     print >>sys.stderr, stable_id, pdb_id, chain_id, '('+str(len(r_coords))+')',
 
     if len(r_coords) < 2:
-        return
+        return df
 
     WAP = clumps(residues)
 
@@ -225,6 +225,8 @@ def process_pdb(df, pdbdir, thr, stat, greater, niter, rerun_thr, rerun_iter, ou
     #                   [ cath_id, pdb_id, len(pdb_chain), len(residues), pval ] ])
     print >>outfile, '\t'.join([ str(it) for it in 
                       [ stable_id, pdb_id, pdb_chain.id, len(pdb_chain), len(residues), pval ] ])
+
+    return df
 
 p = PDB.PDBParser(QUIET=True)
 
