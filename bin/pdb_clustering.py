@@ -225,7 +225,7 @@ def process_pdb(df, pdbfile, thr, stat, greater, niter, rerun_thr, rerun_iter, o
     #                   [ cath_id, pdb_id, len(pdb_chain), len(residues), pval ] ])
     print >>outfile, '\t'.join([ str(it) for it in 
                       [ stable_id, pdb_id, pdb_chain.id, len(pdb_chain), len(residues), pval ] ])
-
+    outfile.close()
     return df
 
 p = PDB.PDBParser(QUIET=True)
@@ -261,4 +261,4 @@ pdb_map = pandas.read_table(args.pdbmap, dtype={ "stable_id": str, "pdb_id": str
 # pdb_map.groupby(["cath_id", "pdb_id"]).apply(process_pdb, args.pdbfile)
 outfile = open(args.outfile, 'w')
 # pdb_map.groupby(["stable_id", "pdb_id", "pdb_chain"]).apply(process_pdb, args.pdbdir, args.thr, args.stat, args.greater, args.niter, args.rerun_thr, args.rerun_iter, outfile)
-process_pdb(pdb_map)
+process_pdb(pdb_map, args.pdbfile, args.thr, args.stat, args.greater, args.niter, args.rerun_thr, args.rerun_iter, outfile)
