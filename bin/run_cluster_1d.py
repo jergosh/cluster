@@ -6,7 +6,7 @@ import argparse
 from subprocess import Popen
 import glob 
 
-cluster1d_cmd = "python /nfs/research2/goldman/gregs/cluster/bin/cluster_1d.py --infile {} --outfile {} --niter {}"
+cluster1d_cmd = "python /hps/nobackup/goldman/gregs/cluster/bin/cluster_1d.py --infile {} --outfile {} --niter {}"
 
 def main():
     argparser = argparse.ArgumentParser()
@@ -28,7 +28,7 @@ def main():
         logfile = path.abspath(path.join(args.logdir, basename+'.log'))
         cluster1d = cluster1d_cmd.format(path.abspath(f), outfile, args.niter)
 
-        p = Popen([ 'bsub', '-o'+ logfile, 'bash '+cluster1d ])
+        p = Popen([ 'bsub', '-o'+ logfile, cluster1d ])
         p.wait()
 
 if __name__ == "__main__":
