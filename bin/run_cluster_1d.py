@@ -27,11 +27,13 @@ def main():
         out_id = '_'.join(basename_split[:3])
         subdir = basename_split[1][:2]
         outdir = path.join(args.outdir, subdir)
+        logdir = path.join(args.logdir, subdir)
         outfile = path.abspath(path.join(outdir, out_id+'.res'))
+        logfile = path.abspath(path.join(logdir, basename+'.log'))
         print outdir, out_id
 
         utils.check_dir(outdir)
-        logfile = path.abspath(path.join(args.logdir, basename+'.log'))
+        utils.check_dir(logdir)
         cluster1d = cluster1d_cmd.format(path.abspath(f), outfile, args.niter)
 
         p = Popen([ 'bsub', '-o'+ logfile, cluster1d ])
