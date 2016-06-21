@@ -6,6 +6,8 @@ import argparse
 from subprocess import Popen
 import glob 
 
+import utils 
+
 cluster1d_cmd = "python /hps/nobackup/goldman/gregs/cluster/bin/cluster_1d.py --infile {} --outfile {} --niter {}"
 
 def main():
@@ -21,10 +23,14 @@ def main():
 
     for f in glob.glob(path.join(args.indir, '*', args.filename)):
         basename = path.basename(f).rpartition('.')[0]
-        out_id = '_'.join(basename.split('_')[:3])
-        print out_id
-        outfile = path.abspath(path.join(args.outdir, 'out_id'+'.res'))
+        basename_split = basename.split('_')
+        out_id = '_'.join(basename_split[:3])
+        subdir = basename_split[1][:2]
+        outdir = path.join(args.outdir, subdir)
+        outfile = path.abspath(path.join(outdir, out_id+'.res'))
+        print outdir, out_id
 
+        utils.check_dir(outdir)
         logfile = path.abspath(path.join(args.logdir, basename+'.log'))
         cluster1d = cluster1d_cmd.format(path.abspath(f), outfile, args.niter)
 
