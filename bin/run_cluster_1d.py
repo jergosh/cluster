@@ -25,10 +25,10 @@ def main():
         print out_id
         outfile = path.abspath(path.join(args.outdir, 'out_id'+'.res'))
 
-        log_file = path.abspath(path.join(args.logdir, basename+'.log'))
-        cluster1d = cluster1d_cmd.format(path.abspath(f), args.niter)
+        logfile = path.abspath(path.join(args.logdir, basename+'.log'))
+        cluster1d = cluster1d_cmd.format(path.abspath(f), outfile, args.niter)
 
-        p = Popen([ 'bsub', '-o'+ log_file, 'bash '+cluster1d ])
+        p = Popen([ 'bsub', '-o'+ logfile, 'bash '+cluster1d ])
         p.wait()
 
 if __name__ == "__main__":
