@@ -6,13 +6,14 @@ import argparse
 from subprocess import Popen
 import glob 
 
-cluster1d_cmd = "python /nfs/research2/goldman/gregs/cluster/bin/cluster_1d.py --infile {} --niter {}"
+cluster1d_cmd = "python /nfs/research2/goldman/gregs/cluster/bin/cluster_1d.py --infile {} --outfile {} --niter {}"
 
 def main():
     argparser = argparse.ArgumentParser()
 
     argparser.add_argument('--indir', metavar='input_dir', type=str, required=True)
     argparser.add_argument('--filename', metavar='slr_file', type=str, default="ENS*.res")
+    argparser.add_argument('--outdir', metavar='output_dir', type=str, required=True)
     argparser.add_argument('--logdir', metavar='log_dir', type=str, required=True)
     argparser.add_argument('--niter', metavar='niter', type=int, default=999)
 
@@ -20,13 +21,14 @@ def main():
 
     for f in glob.glob(path.join(args.indir, '*', args.filename)):
         basename = path.basename(f).rpartition('.')[0]
-        print basename
+        out_id = '_'.join(basename.split('_')[:3])
+        print out_id
+        outfile = path.abspath(path.join(args.outdir, 'out_id'+'.res'))
 
         log_file = path.abspath(path.join(args.logdir, basename+'.log'))
-        print path.abspath(f)
         cluster1d = cluster1d_cmd.format(path.abspath(f), args.niter)
 
-        p = Popen([ 'bsub', '-o'+ log_file, cluster1d ])
+        p = Popen([ 'bsub', '-o'+ log_file, 'bash '+cluster1d ])
         p.wait()
 
 if __name__ == "__main__":

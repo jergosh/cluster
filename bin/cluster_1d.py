@@ -12,6 +12,7 @@ def main():
     argparser = argparse.ArgumentParser()
 
     argparser.add_argument('--infile', metavar='slr_file', type=str, required=True)
+    argparser.add_argument('--outfile', metavar='out_file', type=str, required=True)
     argparser.add_argument('--niter', metavar='niter', type=int, default=999)
 
     args = argparser.parse_args()
@@ -22,7 +23,11 @@ def main():
 
     marks = slr['Omega']
 
-    print cucala.signMWcont(coords, marks, cucala.order_dists(coords), args.niter)
+    ret = cucala.signMWcont(coords, marks, cucala.order_dists(coords), args.niter)
+
+    outfile = open(args.outfile, 'w')
+    print >>outfile, '\t'.join([ str(it) for it in ret ])
+    outfile.close()
 
 if __name__ == "__main__":
     main()
