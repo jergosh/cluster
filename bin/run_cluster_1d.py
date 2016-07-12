@@ -44,7 +44,7 @@ def main():
         utils.check_dir(logdir)
         cluster1d = cluster1d_cmd.format(path.abspath(f), outfile, args.niter)
 
-        p = Popen([ 'bsub', '-qresearch-long', '-o'+ logfile, cluster1d ])
+        p = Popen([ 'bsub', '-qlong', '-o'+ logfile, cluster1d ])
         p.wait()
 
 if __name__ == "__main__":
