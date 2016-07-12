@@ -18,6 +18,10 @@ def main():
     argparser.add_argument('--outdir', metavar='output_dir', type=str, required=True)
     argparser.add_argument('--logdir', metavar='log_dir', type=str, required=True)
     argparser.add_argument('--niter', metavar='niter', type=int, default=999)
+    argparser.add_argument('--rerun', dest='rerun', action='store_true')
+
+    argparser.set_defaults(rerun=False)
+
 
     args = argparser.parse_args()
 
@@ -31,6 +35,10 @@ def main():
         outfile = path.abspath(path.join(outdir, out_id+'.res'))
         logfile = path.abspath(path.join(logdir, basename+'.log'))
         print outdir, out_id
+
+        if args.rerun and  path.exists(outfile):
+            print "Skipping", outfile
+            continue
 
         utils.check_dir(outdir)
         utils.check_dir(logdir)
