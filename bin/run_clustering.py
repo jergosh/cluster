@@ -52,7 +52,7 @@ def submit_clustering(df, pdbdir, thr, stat, greater, niter, rerun_thr, rerun_it
                                        greater_val,
                                        niter,
                                        rerun_iter)
-    p = Popen([ 'bsub', '-o'+log_file, clustering ])
+    p = Popen([ 'bsub', '-o'+log_file, '-R "affinity[core(1,same=socket,exclusive=(core, alljobs)): cpubind=core]', clustering ])
     p.wait()
 
     return df
