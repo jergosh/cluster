@@ -19,6 +19,7 @@ def main():
     argparser.add_argument('--logdir', metavar='log_dir', type=str, required=True)
     argparser.add_argument('--niter', metavar='niter', type=int, default=999)
     argparser.add_argument('--rerun', dest='rerun', action='store_true')
+    argparser.add_argument('--queue', dest='queue', default="research", choices=["short", "research", "long"])
 
     argparser.set_defaults(rerun=False)
 
@@ -44,7 +45,8 @@ def main():
         utils.check_dir(logdir)
         cluster1d = cluster1d_cmd.format(path.abspath(f), outfile, args.niter)
 
-        p = Popen([ 'bsub', '-R"affinity[core(1,same=socket,exclusive=(core, alljobs)): cpubind=core]"', '-qlong', '-o'+ logfile, cluster1d ])
+        p = Popen([ 'bsub', '-R"affinity[core(1,same=socket,exclusive=(core, alljobs)): cpubind=core]"', '-q'+args.queue,
+                    '-o'+ logfile, cluster1d ])
         p.wait()
 
 if __name__ == "__main__":
