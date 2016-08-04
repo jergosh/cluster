@@ -32,7 +32,7 @@ argparser.add_argument("--rerun_iter", metavar="rerun_iter", type=int, required=
 
 args = argparser.parse_args()
 
-def submit_clustering(df, pdbdir, thr, stat, greater, niter, rerun_thr, rerun_iter, outdir, logdir, method):
+def submit_clustering(df, pdbdir, thr, stat, greater, niter, rerun_thr, rerun_iter, outdir, logdir, method, sign_thr):
     # Write out a file -- stable_id - pdb_id - pdb_chain
     stable_id = df.stable_id.iloc[0]
     pdb_id = df.pdb_id.iloc[0]
