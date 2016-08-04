@@ -82,6 +82,57 @@ def centroid(residue):
 
 def dist(at1, at2):
     return sqrt(reduce(operator.add, [ (c[0]-c[1])**2 for c in zip(at1, at2) ]))
+
+def cucala(sel_residues, all_residues, dists, niter):
+    centroids = []
+    marks = []
+
+    for r in all_residues:
+        centroids.append(centroid(r))
+        marks.append(r in sel_residues)
+
+    return cucala.signMWcont(centroids, marks, dists, niter)
+
+def run_cucala(sel_residues, all_residues, thr, niter, rerun_thr, rerun_niter):
+    rets = [] 
+    dists = cucala.order_dists(coords)
+    cluster_id = 1
+
+    ret = cucala(sel_residues, all_residues, dists, niter)
+    # Output pre- and post-threshold p-values to separate files?
+    if ret[4] < rerun_thr:
+        ret = cucala(sel_residues, all_residues, dists, rerun_niter)
+
+    rets.append(ret)
+
+    while ret[4] < thr:
+        cluster_id += 1
+        all_residues[:] = [ item for i, item in enumerate(all_residues) if i not in ret[1] ]
+
+        dists = cucala.order_dists(coords)
+        ret = cucala.signMWcont(coords, marks, dists, niter)
+
+        if ret[4] < rerun_thr:
+            ret = cucala(sel_residues, all_residues, dists, rerun_niter)
+
+        if ret[4] < thr:
+            rets.append(ret)
+
+    return rets
+
+# TODO Should have run_clumps() implemented as well
+def run_clumps(sel_residues, all_residues, thr, niter, rerun_thr, rerun_niter):
+    WAP = clumps(sel_residues)
+
+    pval = run_sim(pdb_chain, len(sel_residues), WAP, niter)
+    print >>sys.stderr, pval,
+    if pval < rerun_thr:
+        pval = run_sim(pdb_chain, len(sel_residues), WAP, rerun_iter)
+        print >>sys.stderr, pval
+    else:
+        print >>sys.stderr
+
+    return pval
         
 def clumps(residues, thr=6):
     WAP = 0.0
@@ -93,6 +144,15 @@ def clumps(residues, thr=6):
             WAP += exp(- d**2 / (2*thr**2))
 
     return WAP
+
+def run_sim(pdb_chain, n_residues, score, niter, method):
+    sim_WAP = []
+    for i in range(niter):
+        sim_residues = random.sample(pdb_chain, n_residues)
+        sim_WAP.append(method(sim_residues))
+
+    pval = sum([ score < w for w in sim_WAP ]) * 1.0 / (niter+1)
+    return pval
 
 d = lambda: defaultdict(int)
 class ClusterList():
@@ -154,16 +214,7 @@ def find_sequential(chain, res_id):
 
     return None
 
-def run_sim(pdb_chain, n_residues, score, niter):
-    sim_WAP = []
-    for i in range(niter):
-        sim_residues = random.sample(pdb_chain, n_residues)
-        sim_WAP.append(clumps(sim_residues))
-
-    pval = sum([ score < w for w in sim_WAP ]) * 1.0 / niter
-    return pval
-
-def process_pdb(df, pdbfile, thr, stat, greater, niter, rerun_thr, rerun_iter, outfile):
+def process_pdb(df, pdbfile, thr, stat, greater, niter, rerun_thr, rerun_iter, outfile, method):
     pdb_id = df.pdb_id.iloc[0]
     stable_id = df.stable_id.iloc[0]
     chain_id = df.pdb_chain.iloc[0]
@@ -190,41 +241,43 @@ def process_pdb(df, pdbfile, thr, stat, greater, niter, rerun_thr, rerun_iter, o
         print >>sys.stderr, "PDB file", pdb_id, "missing!"
         return df
 
-    r_coords = []
-    residues = []
+    all_residues = []
+    sel_residues = []
+    sel_coords = []
     for i, row in df.iterrows():
+        res_id = parse_coord(row.pdb_pos)
+        try:
+            r = pdb_chain[res_id]
+        except KeyError, e:
+            r = find_sequential(pdb_chain, res_id)
+            if r is None:
+                raise e
+
+            print >>sys.stderr, r.get_id()
+
+        all_residues.append(r)
+
         if op(row[stat], thr):
-            res_id = parse_coord(row.pdb_pos)
-            try:
-                r = pdb_chain[res_id]
-            except KeyError, e:
-                r = find_sequential(pdb_chain, res_id)
-                if r is None:
-                    raise e
-                print >>sys.stderr, r.get_id()
+            sel_coords.append(r['CA'].get_coord())
+            sel_residues.append(r)
 
-            r_coords.append(r['CA'].get_coord())
-            residues.append(r)
+    print >>sys.stderr, stable_id, pdb_id, chain_id, '('+str(len(sel_coords))+')',
 
-    print >>sys.stderr, stable_id, pdb_id, chain_id, '('+str(len(r_coords))+')',
-
-    if len(r_coords) < 2:
+    if len(sel_residues) < 2:
         return df
+    if method == "clumps":
+        pval = run_clumps(sel_residues, all_residues, thr, niter, rerun_thr, rerun_niter)
+        print >>outfile, '\t'.join([ str(it) for it in 
+                                     [ stable_id, pdb_id, pdb_chain.id, len(pdb_chain), len(residues), '[]', pval ] ])
 
-    WAP = clumps(residues)
+    elif method == "cucala":
+        rets = run_cucala(sel_residues, all_residues, thr, niter, rerun_thr, rerun_niter)
 
-    pval = run_sim(pdb_chain, len(residues), WAP, niter)
-    print >>sys.stderr, pval,
-    if pval < rerun_thr:
-        pval = run_sim(pdb_chain, len(residues), WAP, rerun_iter)
-        print >>sys.stderr, pval
-    else:
-        print >>sys.stderr
+        for ret in rets:
+            print >>outfile, [ stable_id, pdb_id, pdb_chain.id, len(pdb_chain), len(residues), ret[1], ret[4] ]
 
     # print '\t'.join([ str(it) for it in 
     #                   [ cath_id, pdb_id, len(pdb_chain), len(residues), pval ] ])
-    print >>outfile, '\t'.join([ str(it) for it in 
-                      [ stable_id, pdb_id, pdb_chain.id, len(pdb_chain), len(residues), pval ] ])
     outfile.close()
     return df
 
@@ -235,6 +288,7 @@ argparser.add_argument("--pdbmap", metavar="pdb_map", type=str, required=True)
 argparser.add_argument("--pdbfile", metavar="pdb_dir", type=str, required=True)
 argparser.add_argument('--outfile', metavar='out_file', type=str, required=True)
 
+argparser.add_argument("--method", metavar="method", type=str, choices=["cucala", "clumps"], required=True)
 argparser.add_argument("--thr", metavar="thr", type=float, default=1.0)
 argparser.add_argument("--rerun_thr", metavar="rerun_thr", type=float, default=0.001)
 argparser.add_argument("--stat", metavar="thr", type=str, default="omega")
@@ -261,4 +315,4 @@ pdb_map = pandas.read_table(args.pdbmap, dtype={ "stable_id": str, "pdb_id": str
 # pdb_map.groupby(["cath_id", "pdb_id"]).apply(process_pdb, args.pdbfile)
 outfile = open(args.outfile, 'w')
 # pdb_map.groupby(["stable_id", "pdb_id", "pdb_chain"]).apply(process_pdb, args.pdbdir, args.thr, args.stat, args.greater, args.niter, args.rerun_thr, args.rerun_iter, outfile)
-process_pdb(pdb_map, args.pdbfile, args.thr, args.stat, args.greater, args.niter, args.rerun_thr, args.rerun_iter, outfile)
+process_pdb(pdb_map, args.pdbfile, args.thr, args.stat, args.greater, args.niter, args.rerun_thr, args.rerun_iter, outfile, args.method)
