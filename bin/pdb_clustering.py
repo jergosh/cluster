@@ -214,7 +214,7 @@ def find_sequential(chain, res_id):
 
     return None
 
-def process_pdb(df, pdbfile, thr, stat, greater, niter, rerun_thr, rerun_iter, outfile, method):
+def process_pdb(df, pdbfile, thr, stat, greater, niter, rerun_thr, rerun_iter, outfile, method, sign_thr):
     pdb_id = df.pdb_id.iloc[0]
     stable_id = df.stable_id.iloc[0]
     chain_id = df.pdb_chain.iloc[0]
@@ -266,12 +266,12 @@ def process_pdb(df, pdbfile, thr, stat, greater, niter, rerun_thr, rerun_iter, o
     if len(sel_residues) < 2:
         return df
     if method == "clumps":
-        pval = run_clumps(sel_residues, all_residues, thr, niter, rerun_thr, rerun_niter)
+        pval = run_clumps(sel_residues, all_residues, sign_thr, niter, rerun_thr, rerun_niter)
         print >>outfile, '\t'.join([ str(it) for it in 
                                      [ stable_id, pdb_id, pdb_chain.id, len(pdb_chain), len(residues), '[]', pval ] ])
 
     elif method == "cucala":
-        rets = run_cucala(sel_residues, all_residues, thr, niter, rerun_thr, rerun_niter)
+        rets = run_cucala(sel_residues, all_residues, sign_thr, niter, rerun_thr, rerun_niter)
 
         for ret in rets:
             print >>outfile, [ stable_id, pdb_id, pdb_chain.id, len(pdb_chain), len(residues), ret[1], ret[4] ]
@@ -316,4 +316,4 @@ pdb_map = pandas.read_table(args.pdbmap, dtype={ "stable_id": str, "pdb_id": str
 # pdb_map.groupby(["cath_id", "pdb_id"]).apply(process_pdb, args.pdbfile)
 outfile = open(args.outfile, 'w')
 # pdb_map.groupby(["stable_id", "pdb_id", "pdb_chain"]).apply(process_pdb, args.pdbdir, args.thr, args.stat, args.greater, args.niter, args.rerun_thr, args.rerun_iter, outfile)
-process_pdb(pdb_map, args.pdbfile, args.thr, args.stat, args.greater, args.niter, args.rerun_thr, args.rerun_iter, outfile, args.method)
+process_pdb(pdb_map, args.pdbfile, args.thr, args.stat, args.greater, args.niter, args.rerun_thr, args.rerun_iter, outfile, args.method, args.sign_thr)
