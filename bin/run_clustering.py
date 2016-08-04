@@ -18,6 +18,7 @@ argparser.add_argument("--pdbdir", metavar="pdb_dir", type=str, required=True)
 argparser.add_argument("--outdir", metavar="out_dir", type=str, required=True)
 argparser.add_argument("--logdir", metavar="log_dir", type=str, required=True)
 
+argparser.add_argument("--method", metavar="method", type=str, choices=["cucala", "clumps"], required=True)
 argparser.add_argument("--thr", metavar="thr", type=float, default=1.0)
 argparser.add_argument("--rerun_thr", metavar="rerun_thr", type=float, default=0.001)
 argparser.add_argument("--stat", metavar="thr", type=str, default="omega")
@@ -30,7 +31,7 @@ argparser.add_argument("--rerun_iter", metavar="rerun_iter", type=int, required=
 
 args = argparser.parse_args()
 
-def submit_clustering(df, pdbdir, thr, stat, greater, niter, rerun_thr, rerun_iter, outdir, logdir):
+def submit_clustering(df, pdbdir, thr, stat, greater, niter, rerun_thr, rerun_iter, outdir, logdir, method):
     # Write out a file -- stable_id - pdb_id - pdb_chain
     stable_id = df.stable_id.iloc[0]
     pdb_id = df.pdb_id.iloc[0]
@@ -51,11 +52,12 @@ def submit_clustering(df, pdbdir, thr, stat, greater, niter, rerun_thr, rerun_it
                                        stat,
                                        greater_val,
                                        niter,
-                                       rerun_iter)
+                                       rerun_iter,
+                                       method)
     p = Popen([ 'bsub', '-o'+log_file, '-R"affinity[core(1,same=socket,exclusive=(core, alljobs)):cpubind=core]"', clustering ])
     p.wait()
 
     return df
 
 pdb_map = pandas.read_table(args.pdbmap, dtype={ "stable_id": str, "pdb_id": str, "pdb_pos": str, "omega": np.float64 })
-pdb_map.groupby(["stable_id", "pdb_id", "pdb_chain"]).apply(submit_clustering, args.pdbdir, args.thr, args.stat, args.greater, args.niter, args.rerun_thr, args.rerun_iter, args.outdir, args.logdir)
+pdb_map.groupby(["stable_id", "pdb_id", "pdb_chain"]).apply(submit_clustering, args.pdbdir, args.thr, args.stat, args.greater, args.niter, args.rerun_thr, args.rerun_iter, args.outdir, args.logdir, args.method)
