@@ -35,7 +35,7 @@ def main():
     cluster_id = 1
     outfile = open(args.outfile, 'w')
     ret = cucala.signMWcont(coords, marks, cucala.order_dists(coords), args.niter)
-    print >>outfile, '\t'.join([ str(it) for it in ret + [ cluster_id ] ])
+    print >>outfile, '\t'.join([ str(it) for it in ret ] + [ str(cluster_id) ])
 
     while ret[4] < args.thr:
         cluster_id += 1
