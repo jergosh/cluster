@@ -289,6 +289,7 @@ argparser.add_argument("--pdbfile", metavar="pdb_dir", type=str, required=True)
 argparser.add_argument('--outfile', metavar='out_file', type=str, required=True)
 
 argparser.add_argument("--method", metavar="method", type=str, choices=["cucala", "clumps"], required=True)
+argparser.add_argument("--sign_thr", metavar="sign_thr", type=float, default=0.05)
 argparser.add_argument("--thr", metavar="thr", type=float, default=1.0)
 argparser.add_argument("--rerun_thr", metavar="rerun_thr", type=float, default=0.001)
 argparser.add_argument("--stat", metavar="thr", type=str, default="omega")

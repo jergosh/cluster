@@ -53,11 +53,12 @@ def submit_clustering(df, pdbdir, thr, stat, greater, niter, rerun_thr, rerun_it
                                        greater_val,
                                        niter,
                                        rerun_iter,
-                                       method)
+                                       method,
+                                       sign_thr)
     p = Popen([ 'bsub', '-o'+log_file, '-R"affinity[core(1,same=socket,exclusive=(core, alljobs)):cpubind=core]"', clustering ])
     p.wait()
 
     return df
 
 pdb_map = pandas.read_table(args.pdbmap, dtype={ "stable_id": str, "pdb_id": str, "pdb_pos": str, "omega": np.float64 })
-pdb_map.groupby(["stable_id", "pdb_id", "pdb_chain"]).apply(submit_clustering, args.pdbdir, args.thr, args.stat, args.greater, args.niter, args.rerun_thr, args.rerun_iter, args.outdir, args.logdir, args.method)
+pdb_map.groupby(["stable_id", "pdb_id", "pdb_chain"]).apply(submit_clustering, args.pdbdir, args.thr, args.stat, args.greater, args.niter, args.rerun_thr, args.rerun_iter, args.outdir, args.logdir, args.method, args.sign_thr)
