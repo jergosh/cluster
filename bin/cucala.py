@@ -3,6 +3,7 @@ import random
 from numpy import mean, sqrt, zeros
 from scipy import stats
 
+# This only works on continuous data
 def statscanMW(vec):
     v = stats.rankdata(vec)
     n = len(v)
@@ -152,10 +153,10 @@ def signMWcont(coords, marks, dists, niter):
 
     pval = 1
     for i in range(niter):
-        print i,
+        # print i,
         marks_p = random.sample(marks, len(marks))
         I, c, R, v =  MWcont(coords, marks_p, dists)
-        print I
+        # print I
         if I >= maxI:
             pval += 1
 
