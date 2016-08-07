@@ -93,7 +93,7 @@ def cucala(sel_residues, all_residues, dists, niter):
 
     return cucala.signMWcont(centroids, marks, dists, niter)
 
-def run_cucala(sel_residues, all_residues, thr, niter, rerun_thr, rerun_niter):
+def run_cucala(sel_residues, all_residues, thr, niter, rerun_thr, rerun_iter):
     rets = [] 
     dists = cucala.order_dists(coords)
     cluster_id = 1
@@ -101,7 +101,7 @@ def run_cucala(sel_residues, all_residues, thr, niter, rerun_thr, rerun_niter):
     ret = cucala(sel_residues, all_residues, dists, niter)
     # Output pre- and post-threshold p-values to separate files?
     if ret[4] < rerun_thr:
-        ret = cucala(sel_residues, all_residues, dists, rerun_niter)
+        ret = cucala(sel_residues, all_residues, dists, rerun_iter)
 
     rets.append(ret)
 
@@ -113,7 +113,7 @@ def run_cucala(sel_residues, all_residues, thr, niter, rerun_thr, rerun_niter):
         ret = cucala.signMWcont(coords, marks, dists, niter)
 
         if ret[4] < rerun_thr:
-            ret = cucala(sel_residues, all_residues, dists, rerun_niter)
+            ret = cucala(sel_residues, all_residues, dists, rerun_iter)
 
         if ret[4] < thr:
             rets.append(ret)
@@ -121,7 +121,7 @@ def run_cucala(sel_residues, all_residues, thr, niter, rerun_thr, rerun_niter):
     return rets
 
 # TODO Should have run_clumps() implemented as well
-def run_clumps(sel_residues, all_residues, thr, niter, rerun_thr, rerun_niter):
+def run_clumps(sel_residues, all_residues, thr, niter, rerun_thr, rerun_iter):
     WAP = clumps(sel_residues)
 
     pval = run_sim(pdb_chain, len(sel_residues), WAP, niter)
