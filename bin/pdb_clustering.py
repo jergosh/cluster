@@ -95,8 +95,9 @@ def cucala_pdb(sel_residues, all_residues, dists, niter):
     return cucala.signMWcont(centroids, marks, dists, niter)
 
 def run_cucala(sel_residues, all_residues, thr, niter, rerun_thr, rerun_iter):
-    rets = [] 
-    dists = cucala.order_dists(coords)
+    rets = []
+    centroids = [ centroid(r) for r in all_residues ]
+    dists = cucala.order_dists(centroids)
     cluster_id = 1
 
     ret = cucala_pdb(sel_residues, all_residues, dists, niter)
@@ -109,9 +110,9 @@ def run_cucala(sel_residues, all_residues, thr, niter, rerun_thr, rerun_iter):
     while ret[4] < thr:
         cluster_id += 1
         all_residues[:] = [ item for i, item in enumerate(all_residues) if i not in ret[1] ]
-
-        dists = cucala.order_dists(coords)
-        ret = cucala.signMWcont(coords, marks, dists, niter)
+        centroids = [ centroid(r) for r in all_residues ]
+        dists = cucala.order_dists(centroids)
+        ret = cucala.signMWcont(centroids, marks, dists, niter)
 
         if ret[4] < rerun_thr:
             ret = cucala_pdb(sel_residues, all_residues, dists, rerun_iter)
