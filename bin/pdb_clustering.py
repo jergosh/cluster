@@ -83,7 +83,7 @@ def centroid(residue):
 def dist(at1, at2):
     return sqrt(reduce(operator.add, [ (c[0]-c[1])**2 for c in zip(at1, at2) ]))
 
-def cucala(sel_residues, all_residues, dists, niter):
+def cucala_pdb(sel_residues, all_residues, dists, niter):
     centroids = []
     marks = []
 
@@ -98,10 +98,10 @@ def run_cucala(sel_residues, all_residues, thr, niter, rerun_thr, rerun_iter):
     dists = cucala.order_dists(coords)
     cluster_id = 1
 
-    ret = cucala(sel_residues, all_residues, dists, niter)
+    ret = cucala_pdb(sel_residues, all_residues, dists, niter)
     # Output pre- and post-threshold p-values to separate files?
     if ret[4] < rerun_thr:
-        ret = cucala(sel_residues, all_residues, dists, rerun_iter)
+        ret = cucala_pdb(sel_residues, all_residues, dists, rerun_iter)
 
     rets.append(ret)
 
@@ -113,7 +113,7 @@ def run_cucala(sel_residues, all_residues, thr, niter, rerun_thr, rerun_iter):
         ret = cucala.signMWcont(coords, marks, dists, niter)
 
         if ret[4] < rerun_thr:
-            ret = cucala(sel_residues, all_residues, dists, rerun_iter)
+            ret = cucala_pdb(sel_residues, all_residues, dists, rerun_iter)
 
         if ret[4] < thr:
             rets.append(ret)
