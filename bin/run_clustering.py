@@ -10,7 +10,7 @@ import numpy as np
 import pandas
 
 clustering_cmd = "python bin/pdb_clustering.py --pdbmap {} --pdbfile {} --outfile {} \
---thr {} --rerun_thr {} --stat {} {} --niter {} --rerun_iter {}"
+--thr {} --rerun_thr {} --stat {} {} --niter {} --rerun_iter {} --method {} --sign_thr {}"
 
 argparser = ArgumentParser()
 argparser.add_argument("--pdbmap", metavar="pdb_map", type=str, required=True)
