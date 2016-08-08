@@ -112,7 +112,7 @@ def run_cucala(sel_residues, all_residues, thr, niter, rerun_thr, rerun_iter):
         all_residues[:] = [ item for i, item in enumerate(all_residues) if i not in ret[1] ]
         centroids = [ centroid(r) for r in all_residues ]
         dists = cucala.order_dists(centroids)
-        ret = cucala.signMWcont(centroids, marks, dists, niter)
+        ret = cucala_pdb(sel_residues, all_residues, dists, niter)
 
         if ret[4] < rerun_thr:
             ret = cucala_pdb(sel_residues, all_residues, dists, rerun_iter)
