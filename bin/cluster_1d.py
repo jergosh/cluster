@@ -28,9 +28,9 @@ def main():
     # find and remove NAs in slr?
 
     if args.discrete:
-        marks = (slr['Omega'] > 1) & (slr['Adj.Pval'] < args.thr)
+        marks = list((slr['Omega'] > 1) & (slr['Adj.Pval'] < args.thr))
     else:
-        marks = slr['Omega']
+        marks = list(slr['Omega'])
 
     cluster_id = 1
     outfile = open(args.outfile, 'w')
