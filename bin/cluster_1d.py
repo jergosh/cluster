@@ -1,10 +1,11 @@
 import os
 from os import path
-import pandas
 import sys
 import argparse
+import pandas
 
 import cucala
+# Remove ?
 from slr import *
 
 
@@ -43,7 +44,7 @@ def main():
         marks[:] = [ item for i, item in enumerate(marks) if i not in ret[1] ]
 
         ret = cucala.signMWcont(coords, marks, cucala.order_dists(coords), args.niter)
-        print >>outfile, '\t'.join([ str(it) for it in ret ] + [cluster_id] )
+        print >>outfile, '\t'.join([ str(it) for it in ret ] + [str(cluster_id)] )
 
     outfile.close()
 
