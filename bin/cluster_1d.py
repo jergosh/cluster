@@ -40,8 +40,8 @@ def main():
 
     while ret[4] < args.thr:
         cluster_id += 1
-        coords[:] = [ item for i, item in enumerate(coords) if i not in ret[1] ]
-        marks[:] = [ item for i, item in enumerate(marks) if i not in ret[1] ]
+        coords[:] = [ item for i, item in enumerate(coords) if i not in ret[3] ]
+        marks[:] = [ item for i, item in enumerate(marks) if i not in ret[3] ]
 
         ret = cucala.signMWcont(coords, marks, cucala.order_dists(coords), args.niter)
         print >>outfile, '\t'.join([ str(it) for it in ret ] + [str(cluster_id)] )
