@@ -21,6 +21,9 @@ import numpy as np
 import networkx as nx
 import cucala
 
+import multiprocessing
+import functools
+
 re_resid = re.compile("(-?[0-9]+)([A-Z]*)")
 
 def isnan(f):
@@ -84,6 +87,25 @@ def centroid(residue):
 def dist(at1, at2):
     return sqrt(reduce(operator.add, [ (c[0]-c[1])**2 for c in zip(at1, at2) ]))
 
+def signMWcont_iter(iter, coords, marks, dists):
+    marks_p = random.sample(marks, len(marks))
+    I, c, R, v =  cucala.MWcont(coords, marks_p, dists)
+
+    return I
+
+def signMWcont_multi(coords, marks, dists, niter, nthreads):
+    maxI, maxCoords, maxR, maxV = cucala.MWcont(coords, marks, dists)
+
+    iter_partial = functools.partial(signMWcont_iter,
+                                     coords=coords, marks=marks, dists=dists)
+    
+    p = multiprocessing.Pool(nthreads)
+    results = p.map(iter_partial, range(niter))
+    
+    pval = float(sum([I >= maxI for I in results ])) / (niter+1)
+    
+    return maxI, maxCoords, maxR, maxV, pval
+
 def cucala_pdb(sel_residues, all_residues, dists, niter, nthreads):
     centroids = []
     marks = []
@@ -92,7 +114,7 @@ def cucala_pdb(sel_residues, all_residues, dists, niter, nthreads):
         centroids.append(centroid(r))
         marks.append(r in sel_residues)
 
-    return cucala.signMWcont_multi(centroids, marks, dists, niter, nthreads)
+    return signMWcont_multi(centroids, marks, dists, niter, nthreads)
 
 def run_cucala(sel_residues, all_residues, thr, niter, rerun_thr, rerun_iter, nthreads):
     rets = []

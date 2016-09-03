@@ -3,9 +3,6 @@ import random
 from numpy import mean, sqrt, zeros
 from scipy import stats
 
-import multiprocessing
-import functools
-
 # This only works on continuous data
 def statscanMW(vec):
     v = stats.rankdata(vec)
@@ -166,25 +163,6 @@ def signMWcont(coords, marks, dists, niter):
     pval = float(pval) / (niter+1)
     return maxI, maxCoords, maxR, maxV, pval
     
-
-def signMWcont_iter(iter, coords, marks, dists):
-    marks_p = random.sample(marks, len(marks))
-    I, c, R, v =  MWcont(coords, marks_p, dists)
-
-    return I
-
-def signMWcont_multi(coords, marks, dists, niter, nthreads):
-    maxI, maxCoords, maxR, maxV = MWcont(coords, marks, dists)
-
-    iter_partial = functools.partial(signMWcont_iter,
-                                     coords=coords, marks=marks, dists=dists)
-    
-    p = multiprocessing.Pool(nthreads)
-    results = p.map(iter_partial, range(niter))
-    
-    pval = 1 - float(sum([I >= maxI for I in results ])) / (niter+1)
-    
-    return maxI, maxCoords, maxR, maxV, pval
 
 def main():
     coords = []
