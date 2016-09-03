@@ -84,7 +84,7 @@ def centroid(residue):
 def dist(at1, at2):
     return sqrt(reduce(operator.add, [ (c[0]-c[1])**2 for c in zip(at1, at2) ]))
 
-def cucala_pdb(sel_residues, all_residues, dists, niter):
+def cucala_pdb(sel_residues, all_residues, dists, niter, nthreads):
     centroids = []
     marks = []
 
@@ -92,7 +92,7 @@ def cucala_pdb(sel_residues, all_residues, dists, niter):
         centroids.append(centroid(r))
         marks.append(r in sel_residues)
 
-    return cucala.signMWcont(centroids, marks, dists, niter)
+    return cucala.signMWcont_multi(centroids, marks, dists, niter, nthreads)
 
 def run_cucala(sel_residues, all_residues, thr, niter, rerun_thr, rerun_iter):
     rets = []
@@ -100,10 +100,10 @@ def run_cucala(sel_residues, all_residues, thr, niter, rerun_thr, rerun_iter):
     dists = cucala.order_dists(centroids)
     cluster_id = 1
 
-    ret = cucala_pdb(sel_residues, all_residues, dists, niter)
+    ret = cucala_pdb(sel_residues, all_residues, dists, niter, nthreads)
     # Output pre- and post-threshold p-values to separate files?
     if ret[4] < rerun_thr:
-        ret = cucala_pdb(sel_residues, all_residues, dists, rerun_iter)
+        ret = cucala_pdb(sel_residues, all_residues, dists, rerun_iter, nthreads)
 
     rets.append(ret)
 
@@ -216,7 +216,7 @@ def find_sequential(chain, res_id):
 
     return None
 
-def process_pdb(df, pdbfile, thr, stat, greater, niter, rerun_thr, rerun_iter, outfile, method, sign_thr):
+def process_pdb(df, pdbfile, thr, stat, greater, niter, rerun_thr, rerun_iter, outfile, method, sign_thr, nthreads):
     pdb_id = df.pdb_id.iloc[0]
     stable_id = df.stable_id.iloc[0]
     chain_id = df.pdb_chain.iloc[0]
@@ -273,7 +273,7 @@ def process_pdb(df, pdbfile, thr, stat, greater, niter, rerun_thr, rerun_iter, o
                                      [ stable_id, pdb_id, pdb_chain.id, len(pdb_chain), len(all_residues), '[]', pval ] ])
 
     elif method == "cucala":
-        rets = run_cucala(sel_residues, all_residues, sign_thr, niter, rerun_thr, rerun_iter)
+        rets = run_cucala(sel_residues, all_residues, sign_thr, niter, rerun_thr, rerun_iter, nthreads)
 
         for ret in rets:
             print >>outfile, [ stable_id, pdb_id, pdb_chain.id, len(pdb_chain), len(all_residues), ret[1], ret[4] ]
@@ -303,6 +303,7 @@ argparser.add_argument("--niter", metavar="n_iter", type=int, required=False, de
 argparser.add_argument("--rerun_iter", metavar="rerun_iter", type=int, required=False, default=0)
 # argparser.add_argument("--preference", metavar="preference", type=int, required=False, default=-50)
 
+argparser.add_argument("--nthreads", metavar="n_threads", type=int, required=False, default=1)
 
 args = argparser.parse_args()
 
@@ -318,4 +319,4 @@ pdb_map = pandas.read_table(args.pdbmap, dtype={ "stable_id": str, "pdb_id": str
 # pdb_map.groupby(["cath_id", "pdb_id"]).apply(process_pdb, args.pdbfile)
 outfile = open(args.outfile, 'w')
 # pdb_map.groupby(["stable_id", "pdb_id", "pdb_chain"]).apply(process_pdb, args.pdbdir, args.thr, args.stat, args.greater, args.niter, args.rerun_thr, args.rerun_iter, outfile)
-process_pdb(pdb_map, args.pdbfile, args.thr, args.stat, args.greater, args.niter, args.rerun_thr, args.rerun_iter, outfile, args.method, args.sign_thr)
+process_pdb(pdb_map, args.pdbfile, args.thr, args.stat, args.greater, args.niter, args.rerun_thr, args.rerun_iter, outfile, args.method, args.sign_thr, args.nthreads)

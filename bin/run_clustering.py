@@ -10,7 +10,7 @@ import numpy as np
 import pandas
 
 clustering_cmd = "python bin/pdb_clustering.py --pdbmap {} --pdbfile {} --outfile {} \
---thr {} --rerun_thr {} --stat {} {} --niter {} --rerun_iter {} --method {} --sign_thr {}"
+--thr {} --rerun_thr {} --stat {} {} --niter {} --rerun_iter {} --method {} --sign_thr {} --nthreads {}"
 
 argparser = ArgumentParser()
 argparser.add_argument("--pdbmap", metavar="pdb_map", type=str, required=True)
@@ -30,9 +30,11 @@ argparser.set_defaults(greater=True)
 argparser.add_argument("--niter", metavar="n_iter", type=int, required=False, default=0)
 argparser.add_argument("--rerun_iter", metavar="rerun_iter", type=int, required=False, default=0)
 
+argparser.add_argument("--nthreads", metavar="n_threads", type=int, required=False, default=1)
+
 args = argparser.parse_args()
 
-def submit_clustering(df, pdbdir, thr, stat, greater, niter, rerun_thr, rerun_iter, outdir, logdir, method, sign_thr):
+def submit_clustering(df, pdbdir, thr, stat, greater, niter, rerun_thr, rerun_iter, outdir, logdir, method, sign_thr, nthreads):
     # Write out a file -- stable_id - pdb_id - pdb_chain
     stable_id = df.stable_id.iloc[0]
     pdb_id = df.pdb_id.iloc[0]
@@ -55,11 +57,12 @@ def submit_clustering(df, pdbdir, thr, stat, greater, niter, rerun_thr, rerun_it
                                        niter,
                                        rerun_iter,
                                        method,
-                                       sign_thr)
-    p = Popen([ 'bsub', '-o'+log_file, '-R"affinity[core(1,same=socket,exclusive=(core, alljobs)):cpubind=core]"', clustering ])
+                                       sign_thr,
+                                       nthreads)
+    p = Popen([ 'bsub', '-o'+log_file, '-R"affinity[core({},same=socket,exclusive=(core, alljobs)):cpubind=core]"'.format(nthreads), clustering ])
     p.wait()
 
     return df
 
 pdb_map = pandas.read_table(args.pdbmap, dtype={ "stable_id": str, "pdb_id": str, "pdb_pos": str, "omega": np.float64 })
-pdb_map.groupby(["stable_id", "pdb_id", "pdb_chain"]).apply(submit_clustering, args.pdbdir, args.thr, args.stat, args.greater, args.niter, args.rerun_thr, args.rerun_iter, args.outdir, args.logdir, args.method, args.sign_thr)
+pdb_map.groupby(["stable_id", "pdb_id", "pdb_chain"]).apply(submit_clustering, args.pdbdir, args.thr, args.stat, args.greater, args.niter, args.rerun_thr, args.rerun_iter, args.outdir, args.logdir, args.method, args.sign_thr, args.nthreads)
