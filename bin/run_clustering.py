@@ -36,6 +36,10 @@ argparser.add_argument("--nthreads", metavar="n_threads", type=int, required=Fal
 args = argparser.parse_args()
 
 def submit_clustering(df, pdbdir, thr, stat, greater, niter, rerun_thr, rerun_iter, outdir, logdir, method, sign_thr, nthreads):
+    stable_id = df.stable_id.iloc[0]
+    pdb_id = df.pdb_id.iloc[0]
+    pdb_chain = df.pdb_chain.iloc[0]
+
     # Check if there are enough sites
     if greater:
         op = operator.gt
@@ -52,10 +56,6 @@ def submit_clustering(df, pdbdir, thr, stat, greater, niter, rerun_thr, rerun_it
         return df
 
     # Write out a file -- stable_id - pdb_id - pdb_chain
-    stable_id = df.stable_id.iloc[0]
-    pdb_id = df.pdb_id.iloc[0]
-    pdb_chain = df.pdb_chain.iloc[0]
-
     df_file = path.join(outdir, '_'.join([stable_id, pdb_id, pdb_chain])+'.tab')
     out_file = path.join(outdir, '_'.join([stable_id, pdb_id, pdb_chain])+'.out')
     log_file = path.join(logdir, '_'.join([stable_id, pdb_id, pdb_chain, str(thr)])+'.log')
