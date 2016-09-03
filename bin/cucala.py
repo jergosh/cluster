@@ -182,7 +182,7 @@ def signMWcont_multi(coords, marks, dists, niter, nthreads):
     p = multiprocessing.Pool(nthreads)
     results = p.map(iter_partial, range(niter))
     
-    pval = 1 - float(sum([I > maxI for I in results ])) / (niter+1)
+    pval = 1 - float(sum([I >= maxI for I in results ])) / (niter+1)
     
     return maxI, maxCoords, maxR, maxV, pval
 
