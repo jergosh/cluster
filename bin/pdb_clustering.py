@@ -250,15 +250,6 @@ def process_pdb(df, pdbfile, thr, stat, greater, niter, rerun_thr, rerun_iter, o
         op = operator.lt
 
     # Quick check if there might be enough sites, to save time on loading the PDB
-    n_check = 0
-    for i, row in df.iterrows():
-        if op(row[stat], thr):
-            n_check += 1
-
-    if n_check < 2:
-        print >>sys.stderr, "Skipping", stable_id, pdb_id
-        return df
-
     try:
         pdb = p.get_structure(pdb_id, pdbfile)
         pdb_chain = pdb[0][chain_id]
