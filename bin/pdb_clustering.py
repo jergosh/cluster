@@ -94,7 +94,7 @@ def cucala_pdb(sel_residues, all_residues, dists, niter, nthreads):
 
     return cucala.signMWcont_multi(centroids, marks, dists, niter, nthreads)
 
-def run_cucala(sel_residues, all_residues, thr, niter, rerun_thr, rerun_iter):
+def run_cucala(sel_residues, all_residues, thr, niter, rerun_thr, rerun_iter, nthreads):
     rets = []
     centroids = [ centroid(r) for r in all_residues ]
     dists = cucala.order_dists(centroids)
