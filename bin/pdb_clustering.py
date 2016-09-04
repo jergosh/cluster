@@ -113,6 +113,7 @@ def run_cucala(sel_residues, all_residues, thr, niter, rerun_thr, rerun_iter):
         centroids = [ centroid(r) for r in all_residues ]
         dists = cucala.order_dists(centroids)
         ret = cucala_pdb(sel_residues, all_residues, dists, niter)
+        
 
         if ret[4] < rerun_thr:
             ret = cucala_pdb(sel_residues, all_residues, dists, rerun_iter)
