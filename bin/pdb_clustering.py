@@ -102,7 +102,7 @@ def signMWcont_multi(coords, marks, dists, niter, nthreads):
     p = multiprocessing.Pool(nthreads)
     results = p.map(iter_partial, range(niter))
     
-    pval = float(sum([I >= maxI for I in results ])) / (niter+1)
+    pval = float(1 + sum([I >= maxI for I in results ])) / (niter+1)
     
     return maxI, maxCoords, maxR, maxV, pval
 
@@ -119,6 +119,7 @@ def cucala_pdb(sel_residues, all_residues, dists, niter, nthreads):
 def run_cucala(sel_residues, all_residues, thr, niter, rerun_thr, rerun_iter, nthreads):
     rets = []
     centroids = [ centroid(r) for r in all_residues ]
+    # names
     dists = cucala.order_dists(centroids)
     cluster_id = 1
 
@@ -249,7 +250,6 @@ def process_pdb(df, pdbfile, thr, stat, greater, niter, rerun_thr, rerun_iter, o
     else:
         op = operator.lt
 
-    # Quick check if there might be enough sites, to save time on loading the PDB
     try:
         pdb = p.get_structure(pdb_id, pdbfile)
         pdb_chain = pdb[0][chain_id]
@@ -290,7 +290,7 @@ def process_pdb(df, pdbfile, thr, stat, greater, niter, rerun_thr, rerun_iter, o
         rets = run_cucala(sel_residues, all_residues, sign_thr, niter, rerun_thr, rerun_iter, nthreads)
 
         for ret in rets:
-            print >>outfile, [ stable_id, pdb_id, pdb_chain.id, len(pdb_chain), len(all_residues), ret[1], ret[4] ]
+            print >>outfile, [ stable_id, pdb_id, pdb_chain.id, len(pdb_chain), len(all_residues), ret[3], ret[4] ]
 
     # print '\t'.join([ str(it) for it in 
     #                   [ cath_id, pdb_id, len(pdb_chain), len(residues), pval ] ])
