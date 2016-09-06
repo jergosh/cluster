@@ -25,3 +25,8 @@ def main():
             ## TERRIBLE
             f = eval(l)
             print >>outfile, '\t'.join([ ens_id, dataset ] + f)
+
+
+if __name__ == "__main__":
+    main()
+
