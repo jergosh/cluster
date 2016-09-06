@@ -23,8 +23,8 @@ def main():
     argparser.add_argument('--mode', metavar='mode', type=str, default="continuous", choices=["continuous", "discrete"])
 
     argparser.add_argument('--rerun', dest='rerun', action='store_true')
+    argparser.add_argument('--queue', metavar='queue', dest="queue" type=str, default="research", choices=["short", "research", "long"])
     argparser.add_argument('--nthreads', metavar='nthreads', type=int, default=1)
-    argparser.add_argument('--niter', metavar='niter', type=int, default=999)
 
     argparser.set_defaults(rerun=False)
 
