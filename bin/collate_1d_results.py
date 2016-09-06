@@ -22,9 +22,7 @@ def main():
         print ens_id
 
         for l in open(f):
-            ## TERRIBLE
-            f = eval(l)
-            print >>outfile, '\t'.join([ ens_id, dataset ] + f)
+            print >>outfile, '\t'.join([ ens_id, dataset, l ])
 
 
 if __name__ == "__main__":
