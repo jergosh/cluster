@@ -51,11 +51,11 @@ def main():
 
         if args.mode == "continuous":
             cluster1d = cluster1d_cont_cmd.format(path.abspath(f), outfile, args.niter, args.nthreads)
-            p = Popen([ 'bsub', '-R"affinity[core({},same=socket,exclusive=(core, alljobs)): cpubind=core]"'.format(args.nthreads),
+            p = Popen([ 'bsub', '-n'+str(args.nthreads), '-R"affinity[core({},same=socket,exclusive=(core, alljobs)): cpubind=core]"'.format(args.nthreads),
                         '-q'+args.queue, '-o'+ logfile, cluster1d ])
         elif args.mode == "discrete":
             cluster1d = cluster1d_disc_cmd.format(path.abspath(f), outfile, args.niter, args.thr, args.nthreads)
-            p = Popen([ 'bsub', '-R"affinity[core({},same=socket,exclusive=(core, alljobs)): cpubind=core]"'.format(args.nthreads), '-q'+args.queue,
+            p = Popen([ 'bsub', '-n'+str(args.nthreads), '-R"affinity[core({},same=socket,exclusive=(core, alljobs)): cpubind=core]"'.format(args.nthreads), '-q'+args.queue,
                         '-o'+ logfile, cluster1d ])
 
         p.wait()
