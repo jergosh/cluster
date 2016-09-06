@@ -20,6 +20,7 @@ def main():
     argparser.add_argument('--continuous', dest='discrete', action='store_false')
     argparser.add_argument('--thr', metavar='threshold', type=float, default=0.05)
     argparser.add_argument('--niter', metavar='niter', type=int, default=999)
+    argparser.add_argument('--nthreads', metavar='nthreads', type=int, default=1)
     argparser.add_argument('--ret_thr', metavar='threshold', type=float, default=0.05)
 
     
@@ -38,7 +39,7 @@ def main():
 
     cluster_id = 1
     outfile = open(args.outfile, 'w')
-    p = multiprocessing.Pool(4)
+    p = multiprocessing.Pool(args.nthreads)
     
     ret = cucala.signMWcont_multi(coords, marks, cucala.order_dists(coords), args.niter, p)
     print >>outfile, '\t'.join([ str(it) for it in ret ] + [ str(cluster_id) ])
