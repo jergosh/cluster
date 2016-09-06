@@ -14,7 +14,7 @@ def main():
 
     outfile = open(args.outfile, 'w')
     
-    for f in glob.glob(path.join(indir, '*', '*.out')):
+    for f in glob.glob(path.join(indir, '*', '*.res')):
         basename = path.basename(f)
 
         ens_id = basename.split('_')[0]
