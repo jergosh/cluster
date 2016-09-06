@@ -8,7 +8,8 @@ import glob
 
 import utils 
 
-cluster1d_cmd = "python /hps/nobackup/goldman/gregs/cluster/bin/cluster_1d.py --infile {} --outfile {} --niter {}"
+cluster1d_cont_cmd = "python /hps/nobackup/goldman/gregs/cluster/bin/cluster_1d.py --infile {} --outfile {} --niter {} --continous"
+cluster1d_disc_cmd = "python /hps/nobackup/goldman/gregs/cluster/bin/cluster_1d.py --infile {} --outfile {} --niter {} --thr {} --discrete"
 
 def main():
     argparser = argparse.ArgumentParser()
@@ -18,6 +19,8 @@ def main():
     argparser.add_argument('--outdir', metavar='output_dir', type=str, required=True)
     argparser.add_argument('--logdir', metavar='log_dir', type=str, required=True)
     argparser.add_argument('--niter', metavar='niter', type=int, default=999)
+    argparser.add_argument('--thr', metavar='threshold', type=float, default=0.05)
+    argparser.add_argument('--mode', metavar='mode', type=str, default="continuous", choices=["continuous", "discrete"])
     argparser.add_argument('--rerun', dest='rerun', action='store_true')
     argparser.add_argument('--queue', dest='queue', default="research", choices=["short", "research", "long"])
 
@@ -43,10 +46,16 @@ def main():
 
         utils.check_dir(outdir)
         utils.check_dir(logdir)
-        cluster1d = cluster1d_cmd.format(path.abspath(f), outfile, args.niter)
 
-        p = Popen([ 'bsub', '-R"affinity[core(1,same=socket,exclusive=(core, alljobs)): cpubind=core]"', '-q'+args.queue,
-                    '-o'+ logfile, cluster1d ])
+        if mode == "continuous":
+            cluster1d = cluster1d_cont_cmd.format(path.abspath(f), outfile, args.niter)
+            p = Popen([ 'bsub', '-R"affinity[core(1,same=socket,exclusive=(core, alljobs)): cpubind=core]"', '-q'+args.queue,
+                        '-o'+ logfile, cluster1d ])
+        elif mode == "discrete":
+            cluster1d = cluster1d_disc_cmd.format(path.abspath(f), outfile, args.niter, args.thr)
+            p = Popen([ 'bsub', '-R"affinity[core(1,same=socket,exclusive=(core, alljobs)): cpubind=core]"', '-q'+args.queue,
+                        '-o'+ logfile, cluster1d ])
+
         p.wait()
 
 if __name__ == "__main__":
