@@ -1,5 +1,6 @@
 import copy
 import random
+import functools
 from numpy import mean, sqrt, zeros
 from scipy import stats
 
