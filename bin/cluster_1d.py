@@ -3,6 +3,7 @@ from os import path
 import sys
 import argparse
 import pandas
+import multiprocessing
 
 import cucala
 # Remove ?
@@ -20,6 +21,8 @@ def main():
     argparser.add_argument('--thr', metavar='threshold', type=float, default=0.05)
     argparser.add_argument('--niter', metavar='niter', type=int, default=999)
     argparser.add_argument('--ret_thr', metavar='threshold', type=float, default=0.05)
+
+    
     argparser.set_defaults(disrete=False)
 
     args = argparser.parse_args()
@@ -35,7 +38,9 @@ def main():
 
     cluster_id = 1
     outfile = open(args.outfile, 'w')
-    ret = cucala.signMWcont(coords, marks, cucala.order_dists(coords), args.niter)
+    p = multiprocessing.Pool(4)
+    
+    ret = cucala.signMWcont_multi(coords, marks, cucala.order_dists(coords), args.niter, p)
     print >>outfile, '\t'.join([ str(it) for it in ret ] + [ str(cluster_id) ])
 
     while ret[4] < args.thr:
@@ -43,7 +48,7 @@ def main():
         coords[:] = [ item for i, item in enumerate(coords) if i not in ret[3] ]
         marks[:] = [ item for i, item in enumerate(marks) if i not in ret[3] ]
 
-        ret = cucala.signMWcont(coords, marks, cucala.order_dists(coords), args.niter)
+        ret = cucala.signMWcont_multi(coords, marks, cucala.order_dists(coords), args.niter, pool)
         print >>outfile, '\t'.join([ str(it) for it in ret ] + [str(cluster_id)] )
 
     outfile.close()

@@ -148,6 +148,24 @@ def MWcont(coords, marks, dists):
 
     return maxI, maxCoords, maxR, maxV
       
+def signMWcont_iter(iter, coords, marks, dists):
+    marks_p = random.sample(marks, len(marks))
+    I, c, R, v =  MWcont(coords, marks_p, dists)
+
+    return I
+    
+def signMWcont_multi(coords, marks, dists, niter, pool):
+    maxI, maxCoords, maxR, maxV = MWcont(coords, marks, dists)
+
+    iter_partial = functools.partial(signMWcont_iter,
+                                     coords=coords, marks=marks, dists=dists)
+    
+    results = pool.map(iter_partial, range(niter))
+
+    pval = float(1 + sum([I >= maxI for I in results ])) / (niter+1)
+
+    return maxI, maxCoords, maxR, maxV, pval
+    
 def signMWcont(coords, marks, dists, niter):
     maxI, maxCoords, maxR, maxV = MWcont(coords, marks, dists)
 
