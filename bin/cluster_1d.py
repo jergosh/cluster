@@ -54,7 +54,7 @@ def main():
         
         ids[:] = [ item for i, item in enumerate(ids) if i in to_keep ]
         coords[:] = [ item for i, item in enumerate(coords) if i in to_keep ]
-        marks[:] = [ item for i, item in enumerate(marks) if i in to_keep] ]
+        marks[:] = [ item for i, item in enumerate(marks) if i in to_keep ]
 
         ret = cucala.signMWcont_multi(coords, marks, ids, cucala.order_dists(coords), args.niter, pool)
         print >>outfile, '\t'.join([ str(it) for it in ret ] + [str(cluster_id)] )
