@@ -34,6 +34,9 @@ def main():
 
     if args.discrete:
         marks = list((slr['Omega'] > 1) & (slr['Adj.Pval'] < args.thr))
+        print marks
+        if sum(marks) < 2:
+            return
     else:
         marks = list(slr['Omega'])
 
