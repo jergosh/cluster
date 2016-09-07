@@ -120,8 +120,8 @@ def cucala_pdb(sel_residues, all_residues, ids, dists, niter, nthreads, pool):
 def run_cucala(sel_residues, all_residues, thr, niter, rerun_thr, rerun_iter, nthreads):
     rets = []
     centroids = [ centroid(r) for r in all_residues ]
-    ids = [ r.id for r in all_residues ]
-    print ids
+    ids = [ r.id[0] + str(r.id[1]) + r.id[2] for r in all_residues ]
+
     dists = cucala.order_dists(centroids)
     cluster_id = 1
 
