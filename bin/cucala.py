@@ -115,8 +115,8 @@ def MWnaive(coords, marks):
     return maxI, maxCoords, maxR, maxV
             
 
-def MWcont(coords, marks, dists):
-    assert len(coords) == len(marks)
+def MWcont(coords, marks, ids, dists):
+    assert len(coords) == len(marks) == len(ids)
 
     n = len(coords)
     maxI = 0.0
@@ -133,7 +133,7 @@ def MWcont(coords, marks, dists):
             SV += marks[j]
             m += 1
 
-            v.append(j)
+            v.append(ids[j])
 
             if marks[j] == 0:
                 continue
@@ -149,17 +149,17 @@ def MWcont(coords, marks, dists):
 
     return maxI, maxCoords, maxR, maxV
       
-def signMWcont_iter(iter, coords, marks, dists):
+def signMWcont_iter(iter, coords, marks, ids, dists):
     marks_p = random.sample(marks, len(marks))
-    I, c, R, v =  MWcont(coords, marks_p, dists)
+    I, c, R, v =  MWcont(coords, marks_p, ids, dists)
 
     return I
     
-def signMWcont_multi(coords, marks, dists, niter, pool):
-    maxI, maxCoords, maxR, maxV = MWcont(coords, marks, dists)
+def signMWcont_multi(coords, marks, ids, dists, niter, pool):
+    maxI, maxCoords, maxR, maxV = MWcont(coords, marks, ids, dists)
 
     iter_partial = functools.partial(signMWcont_iter,
-                                     coords=coords, marks=marks, dists=dists)
+                                     coords=coords, marks=marks, ids=ids, dists=dists)
     
     results = pool.map(iter_partial, range(niter))
 
