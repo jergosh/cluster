@@ -105,41 +105,49 @@ def signMWcont_multi(coords, marks, dists, niter, nthreads, pool):
     
     return maxI, maxCoords, maxR, maxV, pval
 
-def cucala_pdb(sel_residues, all_residues, dists, niter, nthreads, pool):
+def cucala_pdb(sel_residues, all_residues, ids, dists, niter, nthreads, pool):
     centroids = []
     marks = []
 
     for r in all_residues:
+        # FIXME We're calculating the centroids twice
         centroids.append(centroid(r))
+        
         marks.append(r in sel_residues)
 
-    return signMWcont_multi(centroids, marks, dists, niter, nthreads, pool)
+    return signMWcont_multi(centroids, marks, ids, dists, niter, nthreads, pool)
 
 def run_cucala(sel_residues, all_residues, thr, niter, rerun_thr, rerun_iter, nthreads):
     rets = []
     centroids = [ centroid(r) for r in all_residues ]
-    # names
+    ids = [ r.name for r in all_residues ]
+    print ids
     dists = cucala.order_dists(centroids)
     cluster_id = 1
 
     p = multiprocessing.Pool(nthreads)
-    ret = cucala_pdb(sel_residues, all_residues, dists, niter, nthreads, p)
+    ret = cucala_pdb(sel_residues, all_residues, ids, dists, niter, nthreads, p)
     # Output pre- and post-threshold p-values to separate files?
     if ret[4] < rerun_thr:
         print >>sys.stderr, ret[4], "rerunning..."
-        ret = cucala_pdb(sel_residues, all_residues, dists, rerun_iter, nthreads, p)
+        ret = cucala_pdb(sel_residues, all_residues, ids, dists, rerun_iter, nthreads, p)
 
     rets.append(ret)
 
     while ret[4] < thr:
         cluster_id += 1
-        all_residues[:] = [ item for i, item in enumerate(all_residues) if i not in ret[1] ]
-        centroids = [ centroid(r) for r in all_residues ]
+        to_keep = [ i for i, item in enumerate(ids) if item not in ret[3] ]
+
+        ids[:] = [ item for i, item in enumerate(ids) if i in to_keep ]
+        all_residues[:] = [ item for i, item in enumerate(all_residues) if i in to_keep ]
+        # = [ item for i, item in enumerate(all_residues) if i not in ret[1] ]
+        # centroids = [ centroid(r) for r in all_residues ]
+        centroids[:] = [ item for i, item in enumerate(centroids) if i in to_keep ]
         dists = cucala.order_dists(centroids)
-        ret = cucala_pdb(sel_residues, all_residues, dists, niter, nthreads, p)
+        ret = cucala_pdb(sel_residues, all_residues, ids, dists, niter, nthreads, p)
 
         if ret[4] < rerun_thr:
-            ret = cucala_pdb(sel_residues, all_residues, dists, rerun_iter, nthreads, p)
+            ret = cucala_pdb(sel_residues, all_residues, ids, dists, rerun_iter, nthreads, p)
 
         if ret[4] < thr:
             rets.append(ret)
