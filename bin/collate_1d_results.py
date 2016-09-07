@@ -22,8 +22,7 @@ def main():
         print ens_id
 
         for l in open(f):
-            fields = f.rstrip().split('\t')
-            print fields
+            fields = l.rstrip().split('\t')
             # The cluster contents
             cluster = eval(fields[3])
             fields = fields[:3] + [ min(cluster), max(cluster) ] + fields[4:]
