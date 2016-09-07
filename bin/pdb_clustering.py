@@ -298,7 +298,7 @@ def process_pdb(df, pdbfile, thr, stat, greater, niter, rerun_thr, rerun_iter, o
         rets = run_cucala(sel_residues, all_residues, sign_thr, niter, rerun_thr, rerun_iter, nthreads)
 
         for ret in rets:
-            print >>outfile, '\t'.join([ stable_id, pdb_id, pdb_chain.id, len(pdb_chain), len(all_residues), ret[3], ret[4] ])
+            print >>outfile, '\t'.join([ str(i) for i in [ stable_id, pdb_id, pdb_chain.id, len(pdb_chain), len(all_residues), ret[3], ret[4] ] ])
 
     # print '\t'.join([ str(it) for it in 
     #                   [ cath_id, pdb_id, len(pdb_chain), len(residues), pval ] ])
