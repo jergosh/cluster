@@ -105,7 +105,7 @@ def dist(at1, at2):
     
 #     return maxI, maxCoords, maxR, maxV, pval
 
-def cucala_pdb(sel_residues, all_residues, ids, dists, niter, nthreads, pool):
+def cucala_pdb(sel_residues, all_residues, ids, dists, niter, pool):
     centroids = []
     marks = []
 
@@ -115,7 +115,7 @@ def cucala_pdb(sel_residues, all_residues, ids, dists, niter, nthreads, pool):
         
         marks.append(r in sel_residues)
 
-    return cucala.signMWcont_multi(centroids, marks, ids, dists, niter, nthreads, pool)
+    return cucala.signMWcont_multi(centroids, marks, ids, dists, niter, pool)
 
 def run_cucala(sel_residues, all_residues, thr, niter, rerun_thr, rerun_iter, nthreads):
     rets = []
@@ -126,11 +126,11 @@ def run_cucala(sel_residues, all_residues, thr, niter, rerun_thr, rerun_iter, nt
     cluster_id = 1
 
     p = multiprocessing.Pool(nthreads)
-    ret = cucala_pdb(sel_residues, all_residues, ids, dists, niter, nthreads, p)
+    ret = cucala_pdb(sel_residues, all_residues, ids, dists, niter, p)
     # Output pre- and post-threshold p-values to separate files?
     if ret[4] < rerun_thr:
         print >>sys.stderr, ret[4], "rerunning..."
-        ret = cucala_pdb(sel_residues, all_residues, ids, dists, rerun_iter, nthreads, p)
+        ret = cucala_pdb(sel_residues, all_residues, ids, dists, rerun_iter, p)
 
     rets.append(ret)
 
@@ -144,10 +144,10 @@ def run_cucala(sel_residues, all_residues, thr, niter, rerun_thr, rerun_iter, nt
         # centroids = [ centroid(r) for r in all_residues ]
         centroids[:] = [ item for i, item in enumerate(centroids) if i in to_keep ]
         dists = cucala.order_dists(centroids)
-        ret = cucala_pdb(sel_residues, all_residues, ids, dists, niter, nthreads, p)
+        ret = cucala_pdb(sel_residues, all_residues, ids, dists, niter, p)
 
         if ret[4] < rerun_thr:
-            ret = cucala_pdb(sel_residues, all_residues, ids, dists, rerun_iter, nthreads, p)
+            ret = cucala_pdb(sel_residues, all_residues, ids, dists, rerun_iter, p)
 
         if ret[4] < thr:
             rets.append(ret)
