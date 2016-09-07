@@ -26,7 +26,7 @@ def main():
             # The cluster contents
             cluster = eval(fields[3])
             fields = fields[:3] + [ min(cluster), max(cluster) ] + fields[4:]
-            print >>outfile, '\t'.join([ ens_id, dataset ] + fields)
+            print >>outfile, '\t'.join([ ens_id, dataset ] + [ str(field) for field in fields ])
 
 
 if __name__ == "__main__":
