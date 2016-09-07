@@ -18,11 +18,15 @@ def main():
         basename = path.basename(f)
 
         ens_id = basename.split('_')[0]
-        dataset = '_'.join(basename.split('_')[1:3])
+        dataset = '_'.join(basename.partition('.')[0].split('_')[1:3])
         print ens_id
 
         for l in open(f):
-            print >>outfile, '\t'.join([ ens_id, dataset, l ])
+            fields = f.rstrip().split('\t')
+            # The cluster contents
+            cluster = eval(fields[3])
+            fields = fields[:3] + [ min(cluster), max(cluster) ] + fields[4:]
+            print >>outfile, '\t'.join([ ens_id, dataset ] + fields)
 
 
 if __name__ == "__main__":

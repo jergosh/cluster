@@ -23,11 +23,11 @@ def main():
     argparser.add_argument('--nthreads', metavar='nthreads', type=int, default=1)
     argparser.add_argument('--ret_thr', metavar='threshold', type=float, default=0.05)
 
-    
     argparser.set_defaults(disrete=False)
 
     args = argparser.parse_args()
 
+    
     slr = pandas.read_csv(open(args.infile), sep="\t", comment="\n")
     coords = [ [i] for i in range(0, slr.shape[0]) ]
     # find and remove NAs in slr?
