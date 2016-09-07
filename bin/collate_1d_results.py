@@ -23,6 +23,7 @@ def main():
 
         for l in open(f):
             fields = f.rstrip().split('\t')
+            print fields
             # The cluster contents
             cluster = eval(fields[3])
             fields = fields[:3] + [ min(cluster), max(cluster) ] + fields[4:]
