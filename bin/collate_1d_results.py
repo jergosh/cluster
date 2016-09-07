@@ -25,6 +25,7 @@ def main():
             fields = l.rstrip().split('\t')
             # The cluster contents
             cluster = eval(fields[3])
+            print type(cluster[0]), cluster
             fields = fields[:3] + [ min(cluster), max(cluster) ] + fields[4:]
             print >>outfile, '\t'.join([ ens_id, dataset ] + [ str(field) for field in fields ])
 
