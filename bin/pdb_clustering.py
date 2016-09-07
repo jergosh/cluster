@@ -87,23 +87,23 @@ def centroid(residue):
 def dist(at1, at2):
     return sqrt(reduce(operator.add, [ (c[0]-c[1])**2 for c in zip(at1, at2) ]))
 
-def signMWcont_iter(iter, coords, marks, dists):
-    marks_p = random.sample(marks, len(marks))
-    I, c, R, v =  cucala.MWcont(coords, marks_p, dists)
+# def signMWcont_iter(iter, coords, marks, dists):
+#     marks_p = random.sample(marks, len(marks))
+#     I, c, R, v =  cucala.MWcont(coords, marks_p, dists)
 
-    return I
+#     return I
 
-def signMWcont_multi(coords, marks, dists, niter, nthreads, pool):
-    maxI, maxCoords, maxR, maxV = cucala.MWcont(coords, marks, dists)
+# def signMWcont_multi(coords, marks, dists, niter, nthreads, pool):
+#     maxI, maxCoords, maxR, maxV = cucala.MWcont(coords, marks, dists)
 
-    iter_partial = functools.partial(signMWcont_iter,
-                                     coords=coords, marks=marks, dists=dists)
+#     iter_partial = functools.partial(signMWcont_iter,
+#                                      coords=coords, marks=marks, dists=dists)
     
-    results = pool.map(iter_partial, range(niter))
+#     results = pool.map(iter_partial, range(niter))
     
-    pval = float(1 + sum([I >= maxI for I in results ])) / (niter+1)
+#     pval = float(1 + sum([I >= maxI for I in results ])) / (niter+1)
     
-    return maxI, maxCoords, maxR, maxV, pval
+#     return maxI, maxCoords, maxR, maxV, pval
 
 def cucala_pdb(sel_residues, all_residues, ids, dists, niter, nthreads, pool):
     centroids = []
@@ -115,7 +115,7 @@ def cucala_pdb(sel_residues, all_residues, ids, dists, niter, nthreads, pool):
         
         marks.append(r in sel_residues)
 
-    return signMWcont_multi(centroids, marks, ids, dists, niter, nthreads, pool)
+    return cucala.signMWcont_multi(centroids, marks, ids, dists, niter, nthreads, pool)
 
 def run_cucala(sel_residues, all_residues, thr, niter, rerun_thr, rerun_iter, nthreads):
     rets = []
