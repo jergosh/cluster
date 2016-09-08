@@ -304,8 +304,9 @@ def process_pdb(df, pdbfile, thr, stat, greater, niter, rerun_thr, rerun_iter, o
         return df
     if method == "clumps":
         pval = run_clumps(sel_residues, all_residues, sign_thr, niter, rerun_thr, rerun_iter)
+        ids = [ r.id[0] + str(r.id[1]) + r.id[2] for r in sel_residues ]
         print >>outfile, '\t'.join([ str(it) for it in 
-                                     [ stable_id, pdb_id, pdb_chain.id, len(pdb_chain), len(all_residues), '[]', pval ] ])
+                                     [ stable_id, pdb_id, pdb_chain.id, len(pdb_chain), len(all_residues), ids, pval ] ])
 
     elif method == "cucala":
         rets = run_cucala(sel_residues, all_residues, sign_thr, niter, rerun_thr, rerun_iter, nthreads)
