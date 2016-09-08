@@ -18,88 +18,49 @@ argparser = ArgumentParser()
 
 argparser.add_argument("--pdbstr", metavar="pdb_structure", type=str, required=True)
 argparser.add_argument("--colorfile", metavar="color_file", type=str, required=False, default=None)
+argparser.add_argument("--session", metavar="session_name", type=str, default=None)
 
 args = argparser.parse_args(os.environ['CMD'].split())
 
-data_table = pd.read_table(open(args.colorfile), sep="\t")
-# assert len(set(data_table.pdb_chain)) == 1
+# Could be more explicit about types here
+data_table = pd.read_table(open(args.colorfile), sep="\t", dtype={ "pdb_pos": str })
+print data_table
 assert len(set(data_table.pdb_id)) == 1
-pdb_name = data_table.pdb_id[0]
-# cmd.load(path.join("data/pdb", 'pdb'+pdb_name+'.ent'))
+pdb_name = data_table.pdb_id.iloc[0]
 cmd.load(args.pdbstr)
 
-# This is weird.
-seq_data = set()
-# myspace = { 'f': lambda resi, resn: seq_data.add((int(resi), resn)) }
-# cmd.iterate('(chain'+chain+')', "f(resi, resn)", space = myspace)
-
-# resis = sorted(seq_data, key=itemgetter(0))
-# seq = SeqUtils.seq1(''.join((c[1] for c in sorted(seq_data, key=itemgetter(0)))))
-
-# for i, l in data_table.iterrows():
-#     residue = str(l.pdb_pos)
-#     if l.omega > 1.0:
-#         r, g, b  = 1.0, 0.0, 0.0
-#     else:
-#         r, g, b  = 1.0, 1.0, 1.0
-
-#     obj = '/pdb'+pdb_name+'//'+chain+'/'+residue
-#     color = [r, g, b]
-
-#     cmd.set_color("col"+residue, color)
-#     cmd.color("col"+residue, obj)
-
+# This assumes there is a single PDB chain (currently the input df is split on pdb chain)
 def colour_pdb(df):
-    print df
+    chain = str(df.pdb_chain.iloc[0])
 
-    chain = df.pdb_chain.iloc[0]
-
-    # TODO: Where to get the chain from? Parse out of the table and assert that there is a 
-    # single chain?
-    cmd.select("chain"+chain, "chain "+chain)
-    cmd.color("gray", "/"+pdb_name+'//'+chain)
+    # cmd.select("chain"+chain, "chain "+chain)
+    cmd.hide("lines", "chain "+chain)
+    cmd.show("cartoon", "chain "+chain)
+    cmd.color("gray90", "/pdb"+pdb_name+'//'+chain)
 
     for i, l in data_table.iterrows():
         residue = str(l.pdb_pos)
-        if l.omega == "grey":
-            r, g, b  = 1.0, 1.0, 1.0
-        elif l.omega == "red":
-            r, g, b  = 1.0, 0.0, 0.0
-        elif l.omega == "blue":
-            r, g, b  = 0.0, 0.0, 1.0
+        obj = '/pdb'+pdb_name+'//'+chain+'/'+residue
 
-        # obj = '/pdb'+pdb_name+'//'+chain+'/'+residue
-        obj = '/'+pdb_name+'//'+chain+'/'+residue
-        color = [r, g, b]
+        cmd.color(l.color, obj)
 
-        cmd.set_color("col"+residue, color)
-        cmd.color("col"+residue, obj)
+def make_sels(df):
+    group = df.group.iloc[0]
+    chain = df.pdb_chain.iloc[0]
     
-    cmd.refresh()
+    resnames = '+'.join(df.pdb_pos)
+    print resnames
 
+    cmd.select(group, "chain "+chain+" and resi "+resnames )
+
+
+# cmd.hide("everything")
+cmd.show("sticks", "hetatm")
 data_table.groupby("pdb_chain").apply(colour_pdb)
-# proj_dir = "/Users/greg/Documents/projects/slr_pipeline"
-# ens, pdb_name, chain, score, length = None, None, None, None, None
-# else:        
-#     offset = 0
-#     strsites_fn = path.join(proj_dir, 'data/ens/73/pdb_map/Eutheria', ens+'.tab')
-#     strsites = open(strsites_fn)
-
-#     strsites.readline() # Header
-#     for l in strsites:
-#         f = l.rstrip().split('\t')
-
-#         if len(f) < 6:
-#             continue
-#         site, omega = int(f[2]), float(f[5])
-#         obj = '/pdb'+pdb_name+'//'+chain+'/'+str(site+offset)
-
-#         if omega > 1:
-#             cmd.set_color("col"+str(site), [1, 0, 0])
-#         else:
-#             cmd.set_color("col"+str(site), [1, (1-omega)/1, (1-omega)/1])
-
-#             cmd.color("col"+str(site), obj)
+data_table.groupby("group").apply(make_sels)
+cmd.refresh()
     
-#             cmd.refresh()
+if session is not None:
+    print "Saving to", args.session
+    cmd.save(args.session)
 
