@@ -179,7 +179,8 @@ def run_clumps(sel_residues, all_residues, thr, niter, rerun_thr, rerun_iter):
         print >>sys.stderr, pval
     else:
         print >>sys.stderr
-
+        
+    print clumps(sel_residues)
     return pval
         
 def clumps(residues, thr=6):
