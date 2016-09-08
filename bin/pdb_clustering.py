@@ -183,7 +183,7 @@ def run_clumps(sel_residues, all_residues, thr, niter, rerun_thr, rerun_iter):
     print clumps(sel_residues)
     return pval
         
-def clumps(residues, thr=6):
+def clumps(residues, thr=8):
     WAP = 0.0
     # coords = [ centroid(r) for r in residues ]
     coords = [ r['CA'].get_coord() for r in residues ]
@@ -203,7 +203,7 @@ def run_sim(pdb_chain, n_residues, score, niter):
     for i in range(niter):
         sim_residues = random.sample(pdb_chain, n_residues)
         w = clumps(sim_residues)
-        if w < score:
+        if w > score:
             print [ r.id[0] + str(r.id[1]) + r.id[2] for r in sim_residues ], w
         sim_WAP.append(w)
 
