@@ -185,7 +185,7 @@ def run_clumps(sel_residues, all_residues, thr, niter, rerun_thr, rerun_iter):
 def clumps(residues, thr=6):
     WAP = 0.0
     # coords = [ centroid(r) for r in residues ]
-    coords = [ r['CA'] for r in residues ]
+    coords = [ r['CA'].get_coord() for r in residues ]
 
     for i, r1 in enumerate(coords):
         for r2 in coords[i+1:]:
