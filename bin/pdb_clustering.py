@@ -198,7 +198,7 @@ def run_sim(pdb_chain, n_residues, score, niter):
         sim_residues = random.sample(pdb_chain, n_residues)
         w = clumps(sim_residues)
         if w < score:
-            print sim_residues, w
+            print [ r.id[0] + str(r.id[1]) + r.id[2] for r in sim_residues ], w
         sim_WAP.append(w)
 
     pval = sum([ score < w for w in sim_WAP ]) * 1.0 / (niter+1)
