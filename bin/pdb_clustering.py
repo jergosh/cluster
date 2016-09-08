@@ -97,6 +97,8 @@ def dist_min(r1, r2):
             if d < dist:
                 dist = d
 
+    return dist
+
 # def signMWcont_iter(iter, coords, marks, dists):
 #     marks_p = random.sample(marks, len(marks))
 #     I, c, R, v =  cucala.MWcont(coords, marks_p, dists)
