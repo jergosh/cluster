@@ -171,10 +171,10 @@ def run_cucala(sel_residues, all_residues, thr, niter, rerun_thr, rerun_iter, nt
 def run_clumps(sel_residues, all_residues, thr, niter, rerun_thr, rerun_iter):
     WAP = clumps(sel_residues)
 
-    pval = run_sim(pdb_chain, len(sel_residues), WAP, niter)
+    pval = run_sim(all_residues, len(sel_residues), WAP, niter)
     print >>sys.stderr, pval,
     if pval < rerun_thr:
-        pval = run_sim(pdb_chain, len(sel_residues), WAP, rerun_iter)
+        pval = run_sim(all_residues, len(sel_residues), WAP, rerun_iter)
         print >>sys.stderr, pval
     else:
         print >>sys.stderr
