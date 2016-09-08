@@ -205,7 +205,7 @@ def run_sim(pdb_chain, n_residues, score, niter):
 
         sim_WAP.append(w)
 
-    pval = sum([ score < w for w in sim_WAP ]) * 1.0 / (niter+1)
+    pval = (1+sum([ score < w for w in sim_WAP ])) * 1.0 / (niter+1)
     return pval
 
 d = lambda: defaultdict(int)
