@@ -134,8 +134,7 @@ def run_cucala(sel_residues, all_residues, thr, niter, rerun_thr, rerun_iter, nt
     centroids = [ centroid(r) for r in all_residues ]
     ids = [ r.id[0] + str(r.id[1]) + r.id[2] for r in all_residues ]
 
-    # dists = cucala.order_dists(centroids)
-    dists = cucala.order_dists(all_residues, dist_fun=dist_min)
+    dists = cucala.order_dists(centroids)
     cluster_id = 1
 
     p = multiprocessing.Pool(nthreads)
@@ -156,8 +155,7 @@ def run_cucala(sel_residues, all_residues, thr, niter, rerun_thr, rerun_iter, nt
         # = [ item for i, item in enumerate(all_residues) if i not in ret[1] ]
         # centroids = [ centroid(r) for r in all_residues ]
         centroids[:] = [ item for i, item in enumerate(centroids) if i in to_keep ]
-        # dists = cucala.order_dists(centroids)
-        dists = cucala.order_dists(all_residues, dist_fun=dist_min)
+        dists = cucala.order_dists(centroids)
         
         ret = cucala_pdb(sel_residues, all_residues, ids, dists, niter, p)
 
