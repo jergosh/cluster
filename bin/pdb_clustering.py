@@ -191,8 +191,7 @@ def clumps(residues, thr=6):
     for i, r1 in enumerate(coords):
         for r2 in coords[i+1:]:
             d = dist(r1, r2)
-            # WAP += exp(- d**2 / (2*thr**2))
-            WAP += d
+            WAP += exp(- d**2 / (2*thr**2))
 
             print r1, r2, d, exp(- d**2 / (2*thr**2))
 
