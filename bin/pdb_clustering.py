@@ -188,9 +188,9 @@ def clumps(residues, thr=6):
     # coords = [ centroid(r) for r in residues ]
     coords = [ r['CA'].get_coord() for r in residues ]
 
-    for i, r1 in enumerate(coords):
-        for r2 in coords[i+1:]:
-            d = dist(r1, r2)
+    for i, r1 in enumerate(residues):
+        for r2 in residues[i+1:]:
+            d = dist(r1['CA'], r2['CA'])
             WAP += exp(- d**2 / (2*thr**2))
 
             print r1, r2, d, exp(- d**2 / (2*thr**2))
