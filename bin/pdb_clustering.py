@@ -84,8 +84,11 @@ def centroid(residue):
         
     return c / k 
 
+# def dist(at1, at2):
+#     return sqrt(reduce(operator.add, [ (c[0]-c[1])**2 for c in zip(at1, at2) ]))
+
 def dist(at1, at2):
-    return sqrt(reduce(operator.add, [ (c[0]-c[1])**2 for c in zip(at1, at2) ]))
+    return sqrt((at1[0]-at2[0])**2 + (at1[1]-at2[1])**2 + (at1[2]-at2[2])**2)
 
 def dist_min(r1, r2):
     dist = float('inf')
@@ -167,7 +170,6 @@ def run_cucala(sel_residues, all_residues, thr, niter, rerun_thr, rerun_iter, nt
 
     return rets
 
-# TODO Should have run_clumps() implemented as well
 def run_clumps(sel_residues, all_residues, thr, niter, rerun_thr, rerun_iter):
     WAP = clumps(sel_residues)
 
