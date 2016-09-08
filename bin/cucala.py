@@ -62,7 +62,7 @@ dist = lambda c1, c2: reduce(lambda x1, x2: x1+x2, [ (c[0]-c[1])**2 for c in zip
 
 # The data is locations + marks -- how to best represent it, 
 # bearing in mind that we shall need to permute the marks
-def order_dists(coords):
+def order_dists(coords, dist_fun=dist):
     """
     Preprocessing: calculating the distances to be able to iterate more 
     efficiently
@@ -72,7 +72,7 @@ def order_dists(coords):
     dists = [None]*n
 
     for i, c1 in enumerate(coords):
-        ds = [ (j, dist(c1, c2)) for j, c2 in enumerate(coords) ]
+        ds = [ (j, dist_fun(c1, c2)) for j, c2 in enumerate(coords) ]
         dists[i] = sorted(ds, key=lambda k: k[1])
 
     return dists 

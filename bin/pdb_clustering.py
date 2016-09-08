@@ -87,6 +87,16 @@ def centroid(residue):
 def dist(at1, at2):
     return sqrt(reduce(operator.add, [ (c[0]-c[1])**2 for c in zip(at1, at2) ]))
 
+def dist_min(r1, r2):
+    dist = float('inf')
+
+    for at1 in r1:
+        for at2 in r2:
+            d = at1 - at2
+
+            if d < dist:
+                dist = d
+
 # def signMWcont_iter(iter, coords, marks, dists):
 #     marks_p = random.sample(marks, len(marks))
 #     I, c, R, v =  cucala.MWcont(coords, marks_p, dists)
@@ -122,7 +132,8 @@ def run_cucala(sel_residues, all_residues, thr, niter, rerun_thr, rerun_iter, nt
     centroids = [ centroid(r) for r in all_residues ]
     ids = [ r.id[0] + str(r.id[1]) + r.id[2] for r in all_residues ]
 
-    dists = cucala.order_dists(centroids)
+    # dists = cucala.order_dists(centroids)
+    dists = cucala.order_dists(all_residues, dist_fun=dist_min)
     cluster_id = 1
 
     p = multiprocessing.Pool(nthreads)
@@ -143,7 +154,9 @@ def run_cucala(sel_residues, all_residues, thr, niter, rerun_thr, rerun_iter, nt
         # = [ item for i, item in enumerate(all_residues) if i not in ret[1] ]
         # centroids = [ centroid(r) for r in all_residues ]
         centroids[:] = [ item for i, item in enumerate(centroids) if i in to_keep ]
-        dists = cucala.order_dists(centroids)
+        # dists = cucala.order_dists(centroids)
+        dists = cucala.order_dists(all_residues, dist_fun=dist_min)
+        
         ret = cucala_pdb(sel_residues, all_residues, ids, dists, niter, p)
 
         if ret[4] < rerun_thr:
