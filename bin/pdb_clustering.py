@@ -36,6 +36,9 @@ def parse_coord(coord):
 
     return ' ', int(n), ic
 
+def rid2str(r):
+    return r.id[0] + str(r.id[1]) + r.id[2]
+
 ## My graph-based methods
 def compute_neighbours(chain, dist_thr):
     neighbour_map = defaultdict(set)
@@ -61,7 +64,7 @@ def run_graph(sel_residues, all_residues, thr, niter, rerun_thr, rerun_iter):
     neighbour_map = compute_neighbours(all_residues, dist_thr=6)
 
     max_clust, max_clust_id, n_clusts, res_map = graph_clustering(neighbour_map, sel_residues)
-    max_labels = [ r.id for r, i, in res_map.items() if i == max_clust_id ]
+    max_labels = [ rid2str(r) for r, i, in res_map.items() if i == max_clust_id ]
     print max_labels
     # labels = [ res_map[r.id] for r in sel_residues ]
 
@@ -170,7 +173,7 @@ def cucala_pdb(sel_residues, all_residues, ids, dists, niter, pool):
 def run_cucala(sel_residues, all_residues, mode, thr, niter, rerun_thr, rerun_iter, nthreads):
     rets = []
     centroids = [ centroid(r) for r in all_residues ]
-    ids = [ r.id[0] + str(r.id[1]) + r.id[2] for r in all_residues ]
+    ids = [ rid2str(r) for r in all_residues ]
 
     dists = cucala.order_dists(centroids)
     cluster_id = 1
@@ -296,7 +299,7 @@ def process_pdb(df, pdbfile, thr, stat, greater, niter, rerun_thr, rerun_iter, o
         return df
     if method == "clumps":
         pval = run_clumps(sel_residues, all_residues, sign_thr, niter, rerun_thr, rerun_iter)
-        ids = [ r.id[0] + str(r.id[1]) + r.id[2] for r in sel_residues ]
+        ids = [ rid2str(r) for r in sel_residues ]
         print >>outfile, '\t'.join([ str(it) for it in 
                                      [ stable_id, pdb_id, pdb_chain.id, len(pdb_chain), len(all_residues), ids, pval ] ])
 
