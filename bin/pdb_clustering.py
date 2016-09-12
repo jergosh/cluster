@@ -65,8 +65,8 @@ def run_graph(sel_residues, all_residues, thr, niter, rerun_thr, rerun_iter):
 
     max_clust, max_clust_id, n_clusts, res_map = graph_clustering(neighbour_map, sel_residues)
     max_labels = [ r[0] + str(r[1]) + r[2] for r, i, in res_map.items() if i == max_clust_id ]
-    print max_labels
     # labels = [ res_map[r.id] for r in sel_residues ]
+    print "real", n_clusts
 
     pval_max, pval_n = graph_sim(sel_residues, all_residues, neighbour_map, max_clust, n_clusts, niter)
     
@@ -105,6 +105,7 @@ def graph_clustering(neighbour_map, sel_residues):
     ccs = list(nx.algorithms.components.connected_components(G))
     max_clust, max_clust_id = sorted([ (len(cc), i) for i, cc in enumerate(ccs) ], key=operator.itemgetter(0))[-1]
     n_clusts = len(ccs)
+    print n_clusts
     
     res_map = {}
     [ [ res_map.__setitem__(r, i) for r in l ] for i, l in enumerate(ccs) ]
