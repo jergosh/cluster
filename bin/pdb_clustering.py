@@ -36,8 +36,7 @@ def parse_coord(coord):
 
     return ' ', int(n), ic
 
-# TODO Put back the slow version and compare results?
-
+## My graph-based methods
 def compute_neighbours(chain, dist_thr):
     neighbour_map = defaultdict(set)
 
@@ -74,6 +73,7 @@ def rcn_clustering(neighbour_map, chain, sign_sites):
     labels = [ res_map[r.id] for r in sign_sites ]
     return labels
 
+## Cucala
 def centroid(residue):
     c = array('f', [0, 0, 0])
 
@@ -132,7 +132,7 @@ def cucala_pdb(sel_residues, all_residues, ids, dists, niter, pool):
 
     return cucala.signMWcont_multi(centroids, marks, ids, dists, niter, pool)
 
-def run_cucala(sel_residues, all_residues, thr, niter, rerun_thr, rerun_iter, nthreads):
+def run_cucala(sel_residues, all_residues, mode, thr, niter, rerun_thr, rerun_iter, nthreads):
     rets = []
     centroids = [ centroid(r) for r in all_residues ]
     ids = [ r.id[0] + str(r.id[1]) + r.id[2] for r in all_residues ]
@@ -170,6 +170,8 @@ def run_cucala(sel_residues, all_residues, thr, niter, rerun_thr, rerun_iter, nt
 
     return rets
 
+
+# CLUMPS
 def run_clumps(sel_residues, all_residues, thr, niter, rerun_thr, rerun_iter):
     WAP = clumps(sel_residues)
 
@@ -208,58 +210,6 @@ def run_sim(pdb_chain, n_residues, score, niter):
     pval = (1+sum([ score < w for w in sim_WAP ])) * 1.0 / (niter+1)
     return pval
 
-d = lambda: defaultdict(int)
-class ClusterList():
-    def __init__(self):
-        self.cl_found = defaultdict(d)
-        self.cl_max = defaultdict(int)
-        self.cl_number = defaultdict(int)
-
-    def collapse_clusters(self, labels):
-        clusters = defaultdict(int)
-        cluster_sizes = defaultdict(int)
-        for l in labels:
-            if isnan(l):
-                print >>sys.stderr, labels
-                return {}
-            clusters[l] += 1
-
-        for cl_size in clusters.values():
-            cluster_sizes[cl_size] += 1
-
-        return cluster_sizes
-
-    def process_clusters(self, labels):
-        cluster_sizes = self.collapse_clusters(labels)
-        self.cl_max[max(cluster_sizes.keys())] += 1
-        self.cl_number[max(labels)+1] += 1
-
-        for cl_size in cluster_sizes:
-            self.cl_found[cl_size][cluster_sizes[cl_size]] += 1
-
-    def get_pvals(self, niter):
-        for n in sorted(self.cl_found, reverse=True):
-            for k in sorted(self.cl_found[n], reverse=True):
-                if n > 1:
-                    self.cl_found[n-1][k] += self.cl_found[n][k]
-                if k > 1:
-                    self.cl_found[n][k-1] += self.cl_found[n][k]
-
-                self.cl_found[n][k] = min(self.cl_found[n][k]/float(niter), 1.0)
-
-        # Biggest cluster size
-        for k in sorted(self.cl_max, reverse=True):
-            if k > 1:
-                self.cl_max[k-1] += self.cl_max[k]
-
-            self.cl_max[k] = min(self.cl_max[k]/float(niter), 1.0)
-
-        # Number of clusters
-        for k in range(1, max(self.cl_number)+1):
-            if k < max(self.cl_number):
-                self.cl_number[k+1] += self.cl_number[k]
-
-            self.cl_number[k] = min(self.cl_number[k]/float(niter), 1.0)
 
 def find_sequential(chain, res_id):
     for r in chain:
@@ -268,7 +218,7 @@ def find_sequential(chain, res_id):
 
     return None
 
-def process_pdb(df, pdbfile, thr, stat, greater, niter, rerun_thr, rerun_iter, outfile, method, sign_thr, nthreads):
+def process_pdb(df, pdbfile, thr, stat, greater, niter, rerun_thr, rerun_iter, outfile, method, mode, sign_thr, nthreads):
     pdb_id = df.pdb_id.iloc[0]
     stable_id = df.stable_id.iloc[0]
     chain_id = df.pdb_chain.iloc[0]
@@ -316,7 +266,7 @@ def process_pdb(df, pdbfile, thr, stat, greater, niter, rerun_thr, rerun_iter, o
                                      [ stable_id, pdb_id, pdb_chain.id, len(pdb_chain), len(all_residues), ids, pval ] ])
 
     elif method == "cucala":
-        rets = run_cucala(sel_residues, all_residues, sign_thr, niter, rerun_thr, rerun_iter, nthreads)
+        rets = run_cucala(sel_residues, all_residues, sign_thr, mode, niter, rerun_thr, rerun_iter, nthreads)
 
         for ret in rets:
             print >>outfile, '\t'.join([ str(i) for i in [ stable_id, pdb_id, pdb_chain.id, len(pdb_chain), len(all_residues), ret[3], ret[4] ] ])
@@ -333,7 +283,8 @@ argparser.add_argument("--pdbmap", metavar="pdb_map", type=str, required=True)
 argparser.add_argument("--pdbfile", metavar="pdb_dir", type=str, required=True)
 argparser.add_argument('--outfile', metavar='out_file', type=str, required=True)
 
-argparser.add_argument("--method", metavar="method", type=str, choices=["cucala", "clumps"], required=True)
+argparser.add_argument("--method", metavar="method", type=str, choices=["cucala", "clumps", "gr_largest", "gr_all"], required=True)
+argparser.add_argument("--mode", metavar="mode", type=str, choices=["discrete", "continuous"], default="discrete")
 argparser.add_argument("--sign_thr", metavar="sign_thr", type=float, default=0.05)
 argparser.add_argument("--thr", metavar="thr", type=float, default=1.0)
 argparser.add_argument("--rerun_thr", metavar="rerun_thr", type=float, default=0.001)
@@ -362,4 +313,4 @@ pdb_map = pandas.read_table(args.pdbmap, dtype={ "stable_id": str, "pdb_id": str
 # pdb_map.groupby(["cath_id", "pdb_id"]).apply(process_pdb, args.pdbfile)
 outfile = open(args.outfile, 'w')
 # pdb_map.groupby(["stable_id", "pdb_id", "pdb_chain"]).apply(process_pdb, args.pdbdir, args.thr, args.stat, args.greater, args.niter, args.rerun_thr, args.rerun_iter, outfile)
-process_pdb(pdb_map, args.pdbfile, args.thr, args.stat, args.greater, args.niter, args.rerun_thr, args.rerun_iter, outfile, args.method, args.sign_thr, args.nthreads)
+process_pdb(pdb_map, args.pdbfile, args.thr, args.stat, args.greater, args.niter, args.rerun_thr, args.rerun_iter, outfile, args.method, args.mode, args.sign_thr, args.nthreads)
