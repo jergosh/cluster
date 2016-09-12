@@ -65,14 +65,14 @@ def run_graph(sel_residues, all_residues, thr, niter, rerun_thr, rerun_iter):
     print max_labels
     # labels = [ res_map[r.id] for r in sel_residues ]
 
-    pval_max, pval_n = graph_sim(sel_residues, all_residues, neighbour_map, niter)
+    pval_max, pval_n = graph_sim(sel_residues, all_residues, neighbour_map, max_clust, n_clusts, niter)
     
     if pval_max < rerun_thr or pval_n < rerun_thr:
-        pval_max, pval_n = graph_sim(sel_residues, all_residues, neighbour_map, rerun_iter)
+        pval_max, pval_n = graph_sim(sel_residues, all_residues, neighbour_map, max_clust, n_clusts, rerun_iter)
 
     return [[pval_max, max_labels], [pval_n]]
 
-def graph_sim(sel_residues, all_residues, neighbour_map, niter):
+def graph_sim(sel_residues, all_residues, neighbour_map, max_clust, n_clusts, niter):
     pval_max, pval_n = 1.0, 1.0
 
     for i in range(niter):
