@@ -93,10 +93,10 @@ def graph_sim(sel_residues, all_residues, neighbour_map, niter):
 
 def graph_clustering(neighbour_map, sel_residues):
     G = nx.Graph()
-    for r in sign_sites:
+    for r in sel_residues:
         G.add_node(r.id)
         for nr in neighbour_map[r]:
-            if nr in sign_sites:
+            if nr in sel_residues:
                 G.add_edge(r.id, nr.id)
 
     ccs = list(nx.algorithms.components.connected_components(G))
