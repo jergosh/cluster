@@ -309,7 +309,7 @@ def process_pdb(df, pdbfile, thr, stat, greater, niter, rerun_thr, rerun_iter, o
     # print '\t'.join([ str(it) for it in 
     #                   [ cath_id, pdb_id, len(pdb_chain), len(residues), pval ] ])
     elif method == "gr":
-        rets = run_graph(sel_residues, all_residues, sign_thr, niter, rerun_thr, rerun_iter, nthreads)
+        rets = run_graph(sel_residues, all_residues, sign_thr, niter, rerun_thr, rerun_iter)
 
         ret_max = rets[0]
         ret_n = rets[1]
