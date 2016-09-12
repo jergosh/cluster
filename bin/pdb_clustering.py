@@ -100,7 +100,7 @@ def graph_clustering(neighbour_map, sel_residues):
                 G.add_edge(r.id, nr.id)
 
     ccs = list(nx.algorithms.components.connected_components(G))
-    max_clust, max_clust_id = sort([ len(cc), i for i, cc in enumerate(ccs) ], key=operator.itemgetter(1))[-1]
+    max_clust, max_clust_id = sort([ (len(cc), i) for i, cc in enumerate(ccs) ], key=operator.itemgetter(1))[-1]
     n_clusts = len(ccs)
     
     res_map = {}
