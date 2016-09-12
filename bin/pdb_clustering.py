@@ -58,7 +58,7 @@ def compute_neighbours(chain, dist_thr):
     return neighbour_map
 
 def run_graph(sel_residues, all_residues, thr, niter, rerun_thr, rerun_iter):
-    neighbour_map = compute_neighbours(all_residues)
+    neighbour_map = compute_neighbours(all_residues, dist_thr=6)
 
     max_clust, max_clust_id, n_clusts, res_map = graph_clustering(neighbourhood_map, sel_residues)
     max_labels = [ r.id for r, i, in res_map.items() if i == max_clust ]
