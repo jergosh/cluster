@@ -56,8 +56,42 @@ def compute_neighbours(chain, dist_thr):
                         continue
 
     return neighbour_map
-        
-def rcn_clustering(neighbour_map, chain, sign_sites):
+
+def run_graph(sel_residues, all_residues, thr, niter, rerun_thr, rerun_iter):
+    neighbour_map = compute_neigbours(all_residues)
+
+    max_clust, max_clust_id, n_clusts, res_map = graph_clustering(neighbourhood_map, sel_residues)
+    max_labels = [ r.id for r, i, in res_map.items() if i == max_clust ]
+    print max_labels
+    # labels = [ res_map[r.id] for r in sel_residues ]
+
+    pval_max, pval_n = graph_sim(sel_residues, all_residues, niter)
+    
+    if pval_max < rerun_thr or pval_n < rerun_thr:
+        pval_max, pval_n = graph_sim(sel_residues, all_residues, rerun_iter)
+
+    return [[pval_max, max_labels], [pval_n]]
+
+def graph_sim(sel_residues, all_residues, niter):
+    pval_max, pval_n = 1.0, 1.0
+
+    for i in range(niter):
+        sim_residues = random.sample(all_residues, len(sel_residues))
+        max_clust_sim, max_clust_id_sim, n_clusts_sim, sim_map = graph_clustering(neighbourhood_map, sim_residues)
+
+        if max_clust_sim >= max_clust:
+            pval_max += 1
+
+        if n_clusts_sim >= n_clusts:
+            pval_n += 1
+
+    pval_max = pval_max / (niter+1)
+    pval_n = pval_n / (niter+1)
+
+    return pval_max, pval_n
+
+
+def graph_clustering(neighbour_map, sel_residues):
     G = nx.Graph()
     for r in sign_sites:
         G.add_node(r.id)
@@ -65,13 +99,14 @@ def rcn_clustering(neighbour_map, chain, sign_sites):
             if nr in sign_sites:
                 G.add_edge(r.id, nr.id)
 
-    ccs = nx.algorithms.components.connected_components(G)
+    ccs = list(nx.algorithms.components.connected_components(G))
+    max_clust, max_clust_id = sort([ len(cc), i for i, cc in enumerate(ccs) ], key=operator.itemgetter(1))[-1]
+    n_clusts = len(ccs)
     
     res_map = {}
     [ [ res_map.__setitem__(r, i) for r in l ] for i, l in enumerate(ccs) ]
 
-    labels = [ res_map[r.id] for r in sign_sites ]
-    return labels
+    return max_clust, max_clust_id, n_clusts, res_map
 
 ## Cucala
 def centroid(residue):
@@ -273,6 +308,14 @@ def process_pdb(df, pdbfile, thr, stat, greater, niter, rerun_thr, rerun_iter, o
 
     # print '\t'.join([ str(it) for it in 
     #                   [ cath_id, pdb_id, len(pdb_chain), len(residues), pval ] ])
+    elif method == "gr":
+        rets = run_graph(sel_residues, all_residues, sign_thr, niter, return_thr, rerun_iter, nthreads)
+
+        ret_max = rets[0]
+        ret_n = rets[1]
+        print >>outfile, '\t'.join([ str(i) for i in [ stable_id, pdb_id, pdb_chain.id, len(pdb_chain), len(all_residues), "gr_max", rets[0][1], rets[0][0]  ] ])
+        print >>outfile, '\t'.join([ str(i) for i in [ stable_id, pdb_id, pdb_chain.id, len(pdb_chain), len(all_residues), "gr_n", "[]", rets[1][0]  ] ])
+    
     outfile.close()
     return df
 
@@ -283,7 +326,7 @@ argparser.add_argument("--pdbmap", metavar="pdb_map", type=str, required=True)
 argparser.add_argument("--pdbfile", metavar="pdb_dir", type=str, required=True)
 argparser.add_argument('--outfile', metavar='out_file', type=str, required=True)
 
-argparser.add_argument("--method", metavar="method", type=str, choices=["cucala", "clumps", "gr_largest", "gr_all"], required=True)
+argparser.add_argument("--method", metavar="method", type=str, choices=["cucala", "clumps", "gr"], required=True)
 argparser.add_argument("--mode", metavar="mode", type=str, choices=["discrete", "continuous"], default="discrete")
 argparser.add_argument("--sign_thr", metavar="sign_thr", type=float, default=0.05)
 argparser.add_argument("--thr", metavar="thr", type=float, default=1.0)
