@@ -288,7 +288,7 @@ def process_pdb(df, pdbfile, thr, stat, greater, niter, rerun_thr, rerun_iter, o
 
         all_residues.append(r)
 
-        if op(row[stat], thr):
+        if op(row[stat], thr) and row["omega"] > 1.0:
             sel_coords.append(r['CA'].get_coord())
             sel_residues.append(r)
 
@@ -331,9 +331,9 @@ argparser.add_argument('--outfile', metavar='out_file', type=str, required=True)
 argparser.add_argument("--method", metavar="method", type=str, choices=["cucala", "clumps", "gr"], required=True)
 argparser.add_argument("--mode", metavar="mode", type=str, choices=["discrete", "continuous"], default="discrete")
 argparser.add_argument("--sign_thr", metavar="sign_thr", type=float, default=0.05)
-argparser.add_argument("--thr", metavar="thr", type=float, default=1.0)
+argparser.add_argument("--thr", metavar="thr", type=float, default=0.05)
 argparser.add_argument("--rerun_thr", metavar="rerun_thr", type=float, default=0.001)
-argparser.add_argument("--stat", metavar="thr", type=str, default="omega")
+argparser.add_argument("--stat", metavar="stat", type=str, default="Adj.Pval")
 argparser.add_argument('--greater', dest='greater', action='store_true')
 argparser.add_argument('--lesser', dest='greater', action='store_false')
 argparser.set_defaults(greater=True)

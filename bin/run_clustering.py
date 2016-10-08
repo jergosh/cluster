@@ -22,8 +22,8 @@ argparser.add_argument("--logdir", metavar="log_dir", type=str, required=True)
 argparser.add_argument("--method", metavar="method", type=str, choices=["cucala", "clumps", "gr"], required=True)
 argparser.add_argument("--sign_thr", metavar="sign_thr", type=float, default=0.05)
 argparser.add_argument("--rerun_thr", metavar="rerun_thr", type=float, default=0.001)
-argparser.add_argument("--stat", metavar="stat", type=str, default="omega")
-argparser.add_argument("--thr", metavar="thr", type=float, default=1.0)
+argparser.add_argument("--stat", metavar="stat", type=str, default="Adj.Pval")
+argparser.add_argument("--thr", metavar="thr", type=float, default=0.05)
 argparser.add_argument('--greater', dest='greater', action='store_true')
 argparser.add_argument('--lesser', dest='greater', action='store_false')
 argparser.set_defaults(greater=True)
@@ -48,7 +48,7 @@ def submit_clustering(df, pdbdir, thr, stat, greater, niter, rerun_thr, rerun_it
 
     n_check = 0
     for i, row in df.iterrows():
-        if op(row[stat], thr):
+        if op(row[stat], thr) and row["omega"] > 1.0:
             n_check += 1
 
     if n_check < 2:
