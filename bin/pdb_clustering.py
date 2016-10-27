@@ -177,7 +177,7 @@ def run_cucala(sel_residues, all_residues, mode, thr, niter, rerun_thr, rerun_it
     dists = cucala.order_dists(centroids)
     cluster_id = 1
 
-    p = multiprocessing.Pool(nthreads)
+    p = multiprocessing.Pool(nthreads, maxtasksperchild=1000)
     ret = cucala_pdb(sel_residues, all_residues, ids, dists, niter, p)
     # Output pre- and post-threshold p-values to separate files?
     if ret[4] < rerun_thr:
