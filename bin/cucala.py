@@ -161,9 +161,15 @@ def signMWcont_multi(coords, marks, ids, dists, niter, pool):
     iter_partial = functools.partial(signMWcont_iter,
                                      coords=coords, marks=marks, ids=ids, dists=dists)
     
-    results = pool.map(iter_partial, range(niter))
+    # results = pool.map(iter_partial, range(niter))
 
-    pval = float(1 + sum([I >= maxI for I in results ])) / (niter+1)
+    # pval = float(1 + sum([I >= maxI for I in results ])) / (niter+1)
+
+    pval = 1
+    for i in range(niter):
+        pval += iter_partial(i) >= maxI
+
+    pval = float(pval) / (niter+1)
 
     return maxI, maxCoords, maxR, maxV, pval
     
