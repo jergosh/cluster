@@ -62,6 +62,9 @@ def submit_clustering(df, pdbdir, thr, stat, greater, niter, rerun_thr, rerun_it
     pdb_file = path.join(pdbdir, 'pdb'+pdb_id+'.ent')
     greater_val = "--greater" if greater else "--lesser"
 
+    if not path.exists(out_file) or os.stat(out_file).st_size == 0:
+        return
+
     df.to_csv(df_file, sep="\t", quoting=csv.QUOTE_NONE)
     clustering = clustering_cmd.format(df_file,
                                        pdb_file,
@@ -76,7 +79,7 @@ def submit_clustering(df, pdbdir, thr, stat, greater, niter, rerun_thr, rerun_it
                                        sign_thr,
                                        nthreads)
     # p = Popen([ 'bsub', '-o'+log_file, '-n'+str(nthreads), '-R"affinity[core({},same=socket,exclusive=(core, alljobs)):cpubind=core]"'.format(nthreads), clustering ])
-    p = Popen([ 'bsub', '-M8192', '-o'+log_file, '-n'+str(nthreads), clustering ])
+    p = Popen([ 'bsub', '-M2048', '-o'+log_file, '-n'+str(nthreads), clustering ])
     p.wait()
 
     return df
