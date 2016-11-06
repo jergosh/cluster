@@ -63,7 +63,7 @@ def submit_clustering(df, pdbdir, thr, stat, greater, niter, rerun_thr, rerun_it
     pdb_file = path.join(pdbdir, 'pdb'+pdb_id+'.ent')
     greater_val = "--greater" if greater else "--lesser"
 
-    if not path.exists(out_file) and os.stat(out_file).st_size == 0:
+    if path.exists(out_file) and os.stat(out_file).st_size > 0:
         return
 
     df.to_csv(df_file, sep="\t", quoting=csv.QUOTE_NONE)
