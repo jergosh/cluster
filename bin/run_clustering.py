@@ -2,6 +2,7 @@ import re
 import sys
 import glob
 import csv
+import os
 from os import path
 from argparse import ArgumentParser
 from subprocess import Popen
