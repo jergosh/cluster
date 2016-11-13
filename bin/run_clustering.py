@@ -33,6 +33,7 @@ argparser.add_argument("--niter", metavar="n_iter", type=int, required=False, de
 argparser.add_argument("--rerun_iter", metavar="rerun_iter", type=int, required=False, default=0)
 
 argparser.add_argument("--nthreads", metavar="n_threads", type=int, required=False, default=1)
+argparser.add_argument("--mem", metavar="mem_limit", type=int, required=False, default=8096)
 
 args = argparser.parse_args()
 
@@ -80,7 +81,7 @@ def submit_clustering(df, pdbdir, thr, stat, greater, niter, rerun_thr, rerun_it
                                        sign_thr,
                                        nthreads)
     # p = Popen([ 'bsub', '-o'+log_file, '-n'+str(nthreads), '-R"affinity[core({},same=socket,exclusive=(core, alljobs)):cpubind=core]"'.format(nthreads), clustering ])
-    p = Popen([ 'bsub', '-M16384', '-o'+log_file, '-n'+str(nthreads), clustering ])
+    p = Popen([ 'bsub', '-M'+str(args.mem), '-o'+log_file, '-n'+str(nthreads), clustering ])
     p.wait()
 
     return df
