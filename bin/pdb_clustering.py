@@ -186,11 +186,11 @@ def run_cucala(sel_residues, all_residues, mode, thr, niter, rerun_thr, rerun_it
     if ret[4] < rerun_thr:
         print >>sys.stderr, ret[4], "rerunning..."
         ret = cucala_pdb(sel_residues, all_residues, ids, dists, rerun_iter, p)
+        print ret
 
     rets.append(ret)
 
     while ret[4] < thr:
-        print ret
         print >>sys.stderr, ret[4], thr, ret[4] < thr
         cluster_id += 1
         print >>sys.stderr, "Finding cluster", cluster_id
