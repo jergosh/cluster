@@ -46,7 +46,7 @@ def main():
         #     print "Skipping", outfile
         #     continue
 
-        if args.discrete:
+        if args.mode == "discrete":
             slr = pandas.read_csv(open(f), sep="\t", comment="\n")
             marks = list((slr['Omega'] > 1) & (slr['Adj.Pval'] < args.thr))
 
