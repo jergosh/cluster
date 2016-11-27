@@ -173,19 +173,17 @@ def signMWcont_multi(coords, marks, ids, dists, niter, pool):
 
     return maxI, maxCoords, maxR, maxV, pval
     
-def signMWcont(coords, marks, dists, niter):
-    maxI, maxCoords, maxR, maxV = MWcont(coords, marks, dists)
+def signMWcont(coords, marks, ids, dists, niter):
+    maxI, maxCoords, maxR, maxV = MWcont(coords, marks, ids, dists)
 
+    iter_partial = functools.partial(signMWcont_iter,
+                                     coords=coords, marks=marks, ids=ids, dists=dists)
     pval = 1
     for i in range(niter):
-        # print i,
-        marks_p = random.sample(marks, len(marks))
-        I, c, R, v =  MWcont(coords, marks_p, dists)
-        # print I
-        if I >= maxI:
-            pval += 1
+        pval += iter_partial(i) >= maxI
 
     pval = float(pval) / (niter+1)
+
     return maxI, maxCoords, maxR, maxV, pval
     
 
