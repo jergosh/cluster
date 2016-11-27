@@ -167,7 +167,8 @@ def cucala_pdb(sel_residues, all_residues, ids, dists, niter, pool):
         
         marks.append(r in sel_residues)
 
-    return cucala.signMWcont_multi(centroids, marks, ids, dists, niter, pool)
+    # return cucala.signMWcont_multi(centroids, marks, ids, dists, niter, pool)
+    return cucala.signMWcont(centroids, marks, ids, dists, niter)
 
 def run_cucala(sel_residues, all_residues, mode, thr, niter, rerun_thr, rerun_iter, nthreads):
     rets = []
@@ -177,7 +178,8 @@ def run_cucala(sel_residues, all_residues, mode, thr, niter, rerun_thr, rerun_it
     dists = cucala.order_dists(centroids)
     cluster_id = 1
 
-    p = multiprocessing.Pool(nthreads, maxtasksperchild=1000)
+    # p = multiprocessing.Pool(nthreads, maxtasksperchild=1000)
+    p = None
     ret = cucala_pdb(sel_residues, all_residues, ids, dists, niter, p)
     # Output pre- and post-threshold p-values to separate files?
     if ret[4] < rerun_thr:
