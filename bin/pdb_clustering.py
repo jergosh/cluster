@@ -190,6 +190,7 @@ def run_cucala(sel_residues, all_residues, mode, thr, niter, rerun_thr, rerun_it
 
     while ret[4] < thr:
         cluster_id += 1
+        print >>sys.stderr, "Finding cluster", cluster_id
         to_keep = [ i for i, item in enumerate(ids) if item not in ret[3] ]
 
         ids[:] = [ item for i, item in enumerate(ids) if i in to_keep ]
@@ -202,7 +203,7 @@ def run_cucala(sel_residues, all_residues, mode, thr, niter, rerun_thr, rerun_it
         ret = cucala_pdb(sel_residues, all_residues, ids, dists, niter, p)
 
         if ret[4] < rerun_thr:
-            print >>sys.stderr, ret[4], "rerunning...", cluster_id
+            print >>sys.stderr, ret[4], "rerunning..."
             ret = cucala_pdb(sel_residues, all_residues, ids, dists, rerun_iter, p)
 
         if ret[4] < thr:
