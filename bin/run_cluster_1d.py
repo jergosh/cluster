@@ -52,7 +52,7 @@ def main():
 
             if sum(marks) < 2:
                 print >>sys.stderr, "Skipping", basename
-                return
+                continue
 
 
         utils.check_dir(outdir)
