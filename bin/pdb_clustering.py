@@ -203,7 +203,8 @@ def run_cucala(sel_residues, all_residues, mode, thr, niter, rerun_thr, rerun_it
         dists = cucala.order_dists(centroids)
         
         ret = cucala_pdb(sel_residues, all_residues, ids, dists, niter, p)
-
+        print ret
+        
         if ret[4] < rerun_thr:
             print >>sys.stderr, ret[4], "rerunning..."
             ret = cucala_pdb(sel_residues, all_residues, ids, dists, rerun_iter, p)
