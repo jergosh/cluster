@@ -180,7 +180,9 @@ def signMWcont(coords, marks, ids, dists, niter):
                                      coords=coords, marks=marks, ids=ids, dists=dists)
     pval = 1
     for i in range(niter):
-        pval += iter_partial(i) >= maxI
+        r = iter_partial(i)
+        pval += r >= maxI
+        print r, pval
 
     pval = float(pval) / (niter+1)
 
