@@ -42,9 +42,18 @@ def main():
         logfile = path.abspath(path.join(logdir, basename+'.log'))
         print outdir, out_id
 
-        if args.rerun and  path.exists(outfile):
-            print "Skipping", outfile
-            continue
+        # if args.rerun and path.exists(outfile):
+        #     print "Skipping", outfile
+        #     continue
+
+        if args.discrete:
+            slr = pandas.read_csv(open(f), sep="\t", comment="\n")
+            marks = list((slr['Omega'] > 1) & (slr['Adj.Pval'] < args.thr))
+
+            if sum(marks) < 2:
+                print >>sys.stderr, "Skipping", basename
+                return
+
 
         utils.check_dir(outdir)
         utils.check_dir(logdir)

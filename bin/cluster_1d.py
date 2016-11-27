@@ -42,7 +42,8 @@ def main():
 
     cluster_id = 1
     outfile = open(args.outfile, 'w')
-    p = multiprocessing.Pool(args.nthreads)
+    # p = multiprocessing.Pool(args.nthreads)
+    p = None
 
     ids = range(len(marks))
     ret = cucala.signMWcont_multi(coords, marks, ids, cucala.order_dists(coords), args.niter, p)
