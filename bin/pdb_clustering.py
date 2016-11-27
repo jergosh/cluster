@@ -186,15 +186,12 @@ def run_cucala(sel_residues, all_residues, mode, thr, niter, rerun_thr, rerun_it
     if ret[4] < rerun_thr:
         print >>sys.stderr, ret[4], "rerunning..."
         ret = cucala_pdb(sel_residues, all_residues, ids, dists, rerun_iter, p)
-        print >>sys.stderr, ret, ret[4]
 
     rets.append(ret)
 
     while ret[4] < thr:
-        print >>sys.stderr, ret[4], thr, ret[4] < thr
         cluster_id += 1
-        print >>sys.stderr, "Finding cluster", cluster_id
-        print >>sys.stderr, ret[3]
+
         to_keep = [ i for i, item in enumerate(ids) if item not in ret[3] ]
         print >>sys.stderr, to_keep
 
@@ -206,7 +203,6 @@ def run_cucala(sel_residues, all_residues, mode, thr, niter, rerun_thr, rerun_it
         dists = cucala.order_dists(centroids)
         
         ret = cucala_pdb(sel_residues, all_residues, ids, dists, niter, p)
-        print >>sys.stderr, ret
         
         if ret[4] < rerun_thr:
             print >>sys.stderr, ret[4], "rerunning..."
@@ -313,7 +309,7 @@ def process_pdb(df, pdbfile, thr, stat, greater, niter, rerun_thr, rerun_iter, o
                                      [ stable_id, pdb_id, pdb_chain.id, len(pdb_chain), len(all_residues), ids, pval ] ])
 
     elif method == "cucala":
-        rets = run_cucala(sel_residues, all_residues, sign_thr, mode, niter, rerun_thr, rerun_iter, nthreads)
+        rets = run_cucala(sel_residues, all_residues, mode, sign_thr, niter, rerun_thr, rerun_iter, nthreads)
 
         for ret in rets:
             print >>outfile, '\t'.join([ str(i) for i in [ stable_id, pdb_id, pdb_chain.id, len(pdb_chain), len(all_residues), ret[3], ret[4] ] ])
