@@ -60,8 +60,8 @@ def compute_neighbours(chain, dist_thr):
 
     return neighbour_map
 
-def run_graph(sel_residues, all_residues, thr, niter, rerun_thr, rerun_iter):
-    neighbour_map = compute_neighbours(all_residues, dist_thr=6)
+def run_graph(sel_residues, all_residues, thr, niter, rerun_thr, rerun_iter, dist_thr=6):
+    neighbour_map = compute_neighbours(all_residues, dist_thr=dist_thr)
 
     max_clust, max_clust_id, n_clusts, res_map = graph_clustering(neighbour_map, sel_residues)
     max_labels = [ r[0] + str(r[1]) + r[2] for r, i, in res_map.items() if i == max_clust_id ]
@@ -261,7 +261,7 @@ def find_sequential(chain, res_id):
 
     return None
 
-def process_pdb(df, pdbfile, thr, stat, greater, niter, rerun_thr, rerun_iter, outfile, method, mode, sign_thr, nthreads):
+def process_pdb(df, pdbfile, thr, stat, greater, niter, rerun_thr, rerun_iter, dist_thr, outfile, method, mode, sign_thr, nthreads):
     pdb_id = df.pdb_id.iloc[0]
     stable_id = df.stable_id.iloc[0]
     chain_id = df.pdb_chain.iloc[0]
@@ -317,7 +317,7 @@ def process_pdb(df, pdbfile, thr, stat, greater, niter, rerun_thr, rerun_iter, o
     # print '\t'.join([ str(it) for it in 
     #                   [ cath_id, pdb_id, len(pdb_chain), len(residues), pval ] ])
     elif method == "gr":
-        rets = run_graph(sel_residues, all_residues, sign_thr, niter, rerun_thr, rerun_iter)
+        rets = run_graph(sel_residues, all_residues, sign_thr, niter, rerun_thr, rerun_iter, dist_thr)
 
         ret_max = rets[0]
         ret_n = rets[1]
@@ -339,6 +339,7 @@ argparser.add_argument("--mode", metavar="mode", type=str, choices=["discrete", 
 argparser.add_argument("--sign_thr", metavar="sign_thr", type=float, default=0.05)
 argparser.add_argument("--thr", metavar="thr", type=float, default=0.05)
 argparser.add_argument("--rerun_thr", metavar="rerun_thr", type=float, default=0.001)
+argparser.add_argument("--dist_thr", metavar="dist_thr", type=float, default=6)
 argparser.add_argument("--stat", metavar="stat", type=str, default="Adj.Pval")
 argparser.add_argument('--greater', dest='greater', action='store_true')
 argparser.add_argument('--lesser', dest='greater', action='store_false')
@@ -364,4 +365,4 @@ pdb_map = pandas.read_table(args.pdbmap, dtype={ "stable_id": str, "pdb_id": str
 # pdb_map.groupby(["cath_id", "pdb_id"]).apply(process_pdb, args.pdbfile)
 outfile = open(args.outfile, 'w')
 # pdb_map.groupby(["stable_id", "pdb_id", "pdb_chain"]).apply(process_pdb, args.pdbdir, args.thr, args.stat, args.greater, args.niter, args.rerun_thr, args.rerun_iter, outfile)
-process_pdb(pdb_map, args.pdbfile, args.thr, args.stat, args.greater, args.niter, args.rerun_thr, args.rerun_iter, outfile, args.method, args.mode, args.sign_thr, args.nthreads)
+process_pdb(pdb_map, args.pdbfile, args.thr, args.stat, args.greater, args.niter, args.rerun_thr, args.dist_thr, args.rerun_iter, outfile, args.method, args.mode, args.sign_thr, args.nthreads)
