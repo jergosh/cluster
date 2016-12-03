@@ -12,7 +12,7 @@ import numpy as np
 import pandas
 
 clustering_cmd = "python bin/pdb_clustering.py --pdbmap {} --pdbfile {} --outfile {} \
---thr {} --rerun_thr {} --stat {} {} --niter {} --rerun_iter {} --method {} --sign_thr {} --nthreads {}"
+--thr {} --rerun_thr {} --dist_thr {} --stat {} {} --niter {} --rerun_iter {} --method {} --sign_thr {} --nthreads {}"
 
 argparser = ArgumentParser()
 argparser.add_argument("--pdbmap", metavar="pdb_map", type=str, required=True)
@@ -23,6 +23,7 @@ argparser.add_argument("--logdir", metavar="log_dir", type=str, required=True)
 argparser.add_argument("--method", metavar="method", type=str, choices=["cucala", "clumps", "gr"], required=True)
 argparser.add_argument("--sign_thr", metavar="sign_thr", type=float, default=0.05)
 argparser.add_argument("--rerun_thr", metavar="rerun_thr", type=float, default=0.001)
+argparser.add_argument("--dist_thr", metavar="dist_thr", type=float, default=6)
 argparser.add_argument("--stat", metavar="stat", type=str, default="Adj.Pval")
 argparser.add_argument("--thr", metavar="thr", type=float, default=0.05)
 argparser.add_argument('--greater', dest='greater', action='store_true')
@@ -37,7 +38,7 @@ argparser.add_argument("--mem", metavar="mem_limit", type=int, required=False, d
 
 args = argparser.parse_args()
 
-def submit_clustering(df, pdbdir, thr, stat, greater, niter, rerun_thr, rerun_iter, outdir, logdir, method, sign_thr, nthreads):
+def submit_clustering(df, pdbdir, thr, stat, greater, niter, rerun_thr, rerun_iter, dist_thr, outdir, logdir, method, sign_thr, nthreads):
     stable_id = df.stable_id.iloc[0]
     pdb_id = df.pdb_id.iloc[0]
     pdb_chain = df.pdb_chain.iloc[0]
@@ -73,6 +74,7 @@ def submit_clustering(df, pdbdir, thr, stat, greater, niter, rerun_thr, rerun_it
                                        out_file,
                                        thr,
                                        rerun_thr,
+                                       dist_thr,
                                        stat,
                                        greater_val,
                                        niter,
@@ -87,4 +89,4 @@ def submit_clustering(df, pdbdir, thr, stat, greater, niter, rerun_thr, rerun_it
     return df
 
 pdb_map = pandas.read_table(args.pdbmap, dtype={ "stable_id": str, "pdb_id": str, "pdb_pos": str, "omega": np.float64 })
-pdb_map.groupby(["stable_id", "pdb_id", "pdb_chain"]).apply(submit_clustering, args.pdbdir, args.thr, args.stat, args.greater, args.niter, args.rerun_thr, args.rerun_iter, args.outdir, args.logdir, args.method, args.sign_thr, args.nthreads)
+pdb_map.groupby(["stable_id", "pdb_id", "pdb_chain"]).apply(submit_clustering, args.pdbdir, args.thr, args.stat, args.greater, args.niter, args.rerun_thr, args.rerun_iter, args.dist_thr, args.outdir, args.logdir, args.method, args.sign_thr, args.nthreads)
