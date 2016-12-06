@@ -12,7 +12,7 @@ import numpy as np
 import pandas
 
 clustering_cmd = "python bin/pdb_clustering.py --pdbmap {} --pdbfile {} --outfile {} \
---thr {} --rerun_thr {} --dist_thr {} --stat {} {} --niter {} --rerun_iter {} --method {} --sign_thr {} --nthreads {}"
+--thr {} --mode {} --rerun_thr {} --dist_thr {} --stat {} {} --niter {} --rerun_iter {} --method {} --sign_thr {} --nthreads {}"
 
 argparser = ArgumentParser()
 argparser.add_argument("--pdbmap", metavar="pdb_map", type=str, required=True)
@@ -21,6 +21,7 @@ argparser.add_argument("--outdir", metavar="out_dir", type=str, required=True)
 argparser.add_argument("--logdir", metavar="log_dir", type=str, required=True)
 
 argparser.add_argument("--method", metavar="method", type=str, choices=["cucala", "clumps", "gr"], required=True)
+argparser.add_argument("--mode", metavar="mode", type=str, choices=["discrete", "continuous"], default="discrete")
 argparser.add_argument("--sign_thr", metavar="sign_thr", type=float, default=0.05)
 argparser.add_argument("--rerun_thr", metavar="rerun_thr", type=float, default=0.001)
 argparser.add_argument("--dist_thr", metavar="dist_thr", type=float, default=6)
@@ -38,7 +39,7 @@ argparser.add_argument("--mem", metavar="mem_limit", type=int, required=False, d
 
 args = argparser.parse_args()
 
-def submit_clustering(df, pdbdir, thr, stat, greater, niter, rerun_thr, rerun_iter, dist_thr, outdir, logdir, method, sign_thr, nthreads):
+def submit_clustering(df, pdbdir, thr, mode, stat, greater, niter, rerun_thr, rerun_iter, dist_thr, outdir, logdir, method, sign_thr, nthreads):
     stable_id = df.stable_id.iloc[0]
     pdb_id = df.pdb_id.iloc[0]
     pdb_chain = df.pdb_chain.iloc[0]
@@ -49,14 +50,15 @@ def submit_clustering(df, pdbdir, thr, stat, greater, niter, rerun_thr, rerun_it
     else:
         op = operator.lt
 
-    n_check = 0
-    for i, row in df.iterrows():
-        if op(row[stat], thr) and row["omega"] > 1.0:
-            n_check += 1
+    if mode == "discrete":
+        n_check = 0
+        for i, row in df.iterrows():
+            if op(row[stat], thr) and row["omega"] > 1.0:
+                n_check += 1
 
-    if n_check < 2:
-        print >>sys.stderr, "Skipping", stable_id, pdb_id
-        return df
+        if n_check < 2:
+            print >>sys.stderr, "Skipping", stable_id, pdb_id
+            return df
 
     # Write out a file -- stable_id - pdb_id - pdb_chain
     df_file = path.join(outdir, '_'.join([stable_id, pdb_id, pdb_chain])+'.tab')
@@ -73,6 +75,7 @@ def submit_clustering(df, pdbdir, thr, stat, greater, niter, rerun_thr, rerun_it
                                        pdb_file,
                                        out_file,
                                        thr,
+                                       mode,
                                        rerun_thr,
                                        dist_thr,
                                        stat,
