@@ -92,4 +92,4 @@ def submit_clustering(df, pdbdir, thr, mode, stat, greater, niter, rerun_thr, re
     return df
 
 pdb_map = pandas.read_table(args.pdbmap, dtype={ "stable_id": str, "pdb_id": str, "pdb_pos": str, "omega": np.float64 })
-pdb_map.groupby(["stable_id", "pdb_id", "pdb_chain"]).apply(submit_clustering, args.pdbdir, args.thr, args.stat, args.greater, args.niter, args.rerun_thr, args.rerun_iter, args.dist_thr, args.outdir, args.logdir, args.method, args.sign_thr, args.nthreads)
+pdb_map.groupby(["stable_id", "pdb_id", "pdb_chain"]).apply(submit_clustering, args.pdbdir, args.thr, args.mode, args.stat, args.greater, args.niter, args.rerun_thr, args.rerun_iter, args.dist_thr, args.outdir, args.logdir, args.method, args.sign_thr, args.nthreads)
