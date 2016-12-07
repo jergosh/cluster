@@ -31,7 +31,7 @@ def main():
 
     args = argparser.parse_args()
 
-    for f in glob.glob(path.join(args.indir, '*', args.filename)):
+    for f in glob.glob(path.join(args.indir, args.filename)):
         basename = path.basename(f).rpartition('.')[0]
         basename_split = basename.split('_')
         out_id = '_'.join(basename_split[:3])
